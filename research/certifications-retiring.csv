@@ -1,0 +1,11 @@
+proveedor,nombre_certificacion,codigo_examen,fecha_retiro,reemplazada_por,notas
+AWS,AWS Certified Machine Learning – Specialty,MLS-C01,31/03/2026,MLA-C01 + AIP-C01,Todavía disponible para rendir hasta la fecha de retiro
+AWS,AWS Certified Data Analytics – Specialty,DAS-C01,08/04/2024,DEA-C01,Retirada definitivamente
+AWS,AWS Certified Database – Specialty,DBS-C01,30/04/2024,,Retirada definitivamente sin reemplazo directo
+Azure,Azure AI Fundamentals,AI-900,30/06/2026,AI-901,Nueva versión en preparación
+Azure,Azure Data Scientist Associate,DP-100,01/06/2026,,Aún no anunciado reemplazo directo
+Azure,Azure AI Engineer Associate,AI-102,30/06/2026,AI-103 (Azure AI Apps and Agents Developer Associate),Reemplazo anunciado para junio 2026
+Azure,Azure Data Engineer Associate,DP-203,31/03/2025,DP-700 + DP-600,Retirada definitivamente en marzo 2025
+Azure,Azure Enterprise Data Analyst Associate,DP-500,30/04/2024,DP-600,Retirada definitivamente en abril 2024
+SAS,SAS Certified Specialist: Advanced Predictive Modeling,A00-225,30/06/2025,,Retirada definitivamente
+SAS,SAS Certified Specialist: Text Analytics,A00-226,30/06/2025,,Retirada definitivamente

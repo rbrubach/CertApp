@@ -1,0 +1,9 @@
+proveedor,nombre_certificacion,codigo_examen,fecha_estimada,area_foco,notas
+Azure,Azure Databricks Data Engineer Associate,DP-750,Mayo 2026,Data Engineering / Databricks,Anunciada en Microsoft Ignite 2024
+Azure,SQL AI Developer Associate,DP-800,Mayo 2026,SQL / AI Development,Anunciada en Microsoft Ignite 2024
+Azure,Azure AI Apps and Agents Developer Associate,AI-103,Junio 2026,AI / Agentes / OpenAI,Reemplaza a AI-102
+Azure,Azure AI Fundamentals (nueva versión),AI-901,Junio 2026,AI / ML / GenAI Fundamentals,Reemplaza a AI-900
+Azure,Azure AI Cloud Developer Associate,AI-200,Julio 2026,AI / Cloud Development,Nuevo rol en el ecosistema Azure AI
+GCP,Generative AI Leader,,Activa (lanzada mayo 2025),AI / GenAI (no técnica),Recién lanzada
+GCP,Associate Data Practitioner,,Activa (lanzada enero 2025),Data Engineering / Analytics / ML,Recién lanzada
+AWS,AWS Certified Generative AI Developer – Professional,AIP-C01,Activa (beta 2025),GenAI / LLMs / Amazon Bedrock,Recién lanzada

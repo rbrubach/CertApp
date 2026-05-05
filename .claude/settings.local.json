@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:aws.amazon.com)",
+      "WebFetch(domain:www.confluent.io)",
+      "WebFetch(domain:learn.mongodb.com)",
+      "WebFetch(domain:www.elastic.co)",
+      "WebFetch(domain:www.databricks.com)",
+      "WebFetch(domain:www.cloudera.com)",
+      "WebFetch(domain:learn.snowflake.com)",
+      "WebFetch(domain:www.teradata.com)",
+      "WebFetch(domain:www.getdbt.com)",
+      "WebFetch(domain:www.tableau.com)",
+      "WebFetch(domain:www.qlik.com)",
+      "WebFetch(domain:training.confluent.io)",
+      "WebFetch(domain:dama.org)",
+      "WebFetch(domain:www.datastax.com)",
+      "WebFetch(domain:developer.hashicorp.com)",
+      "Read(//c/c/Users/rbrubach/OneDrive - NTT DATA EMEAL/Escritorio/CertApp/**)",
+      "Read(//c/c/Users/rbrubach/OneDrive - NTT DATA EMEAL/Escritorio/**)"
+    ]
+  }
+}

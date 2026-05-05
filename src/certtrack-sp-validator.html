@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CertTrack SP Validator — Validación de Conexión SharePoint</title>
+<style>
+:root {
+  --bg: #0e1117;
+  --s1: #161b27;
+  --s2: #1e2535;
+  --border: #2a3349;
+  --ink: #e8eaf2;
+  --ink2: #8892a4;
+  --accent: #4f8ef7;
+  --accent-s: rgba(79,142,247,.12);
+  --success: #22c55e;
+  --success-s: rgba(34,197,94,.12);
+  --danger: #ef4444;
+  --danger-s: rgba(239,68,68,.12);
+  --warn: #f59e0b;
+  --warn-s: rgba(245,158,11,.12);
+  --aws: #ff9900;
+  --azure: #0078d4;
+  --gcp: #ea4335;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+header {
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--ink);
+}
+
+.logo em { color: var(--accent); font-style: normal; }
+
+.status-badge {
+  margin-left: auto;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.status-badge.connected {
+  background: var(--success-s);
+  color: var(--success);
+  border: 1px solid rgba(34,197,94,.2);
+}
+
+.status-badge.disconnected {
+  background: var(--danger-s);
+  color: var(--danger);
+  border: 1px solid rgba(239,68,68,.2);
+}
+
+.status-badge.loading {
+  background: var(--warn-s);
+  color: var(--warn);
+  border: 1px solid rgba(245,158,11,.2);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-badge.connected .status-dot { background: var(--success); }
+.status-badge.disconnected .status-dot { background: var(--danger); }
+.status-badge.loading .status-dot {
+  background: var(--warn);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+
+.card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.info-item {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.info-label {
+  font-size: 11px;
+  color: var(--ink2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: var(--ink);
+  word-break: break-all;
+  font-weight: 500;
+}
+
+.info-value.success { color: var(--success); }
+.info-value.error { color: var(--danger); }
+.info-value.warning { color: var(--warn); }
+
+.button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.button:hover { background: #3d7ce8; }
+.button:disabled {
+  background: var(--ink3);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button.secondary {
+  background: var(--s2);
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+
+.button.secondary:hover { background: var(--s3); }
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 200px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.search-box::placeholder { color: var(--ink2); }
+
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table thead {
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+}
+
+table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+table tbody tr:hover { background: var(--s2); }
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.active {
+  background: var(--success-s);
+  color: var(--success);
+  border: 1px solid rgba(34,197,94,.2);
+}
+
+.badge.inactive {
+  background: var(--danger-s);
+  color: var(--danger);
+  border: 1px solid rgba(239,68,68,.2);
+}
+
+.vendor-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.vendor-badge.aws {
+  background: rgba(255,153,0,.12);
+  color: var(--aws);
+  border: 1px solid rgba(255,153,0,.2);
+}
+
+.vendor-badge.azure {
+  background: rgba(0,120,212,.12);
+  color: var(--azure);
+  border: 1px solid rgba(0,120,212,.2);
+}
+
+.vendor-badge.gcp {
+  background: rgba(234,67,53,.12);
+  color: var(--gcp);
+  border: 1px solid rgba(234,67,53,.2);
+}
+
+.vendor-badge.other {
+  background: rgba(139,139,139,.12);
+  color: #a0a0a0;
+  border: 1px solid rgba(139,139,139,.2);
+}
+
+.error-message {
+  background: var(--danger-s);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.success-message {
+  background: var(--success-s);
+  border: 1px solid var(--success);
+  color: var(--success);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.warning-message {
+  background: var(--warn-s);
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink2);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink2);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--ink2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.link-icon { color: var(--accent); text-decoration: none; }
+.link-icon:hover { text-decoration: underline; }
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--ink2);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CertTrack <em>SP</em> <small>Validator</small></div>
+  <div class="status-badge" id="statusBadge">
+    <span class="status-dot"></span>
+    <span id="statusText">Conectando...</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Connection Status Card -->
+  <div class="card">
+    <h2>Estado de Conexión</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Estado</div>
+        <div class="info-value" id="connectionStatus">Desconectado</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Sitio SharePoint</div>
+        <div class="info-value" id="siteName">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Usuario</div>
+        <div class="info-value" id="userName">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Rol Detectado</div>
+        <div class="info-value" id="userRole">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div id="messageContainer"></div>
+
+  <!-- Stats Card -->
+  <div class="card" id="statsCard" style="display:none;">
+    <h2>Estadísticas</h2>
+    <div class="stats" id="statsGrid"></div>
+  </div>
+
+  <!-- Data Card -->
+  <div class="card" id="dataCard" style="display:none;">
+    <h2>Certificaciones (desde SharePoint)</h2>
+
+    <div class="controls">
+      <input type="text" class="search-box" id="searchBox" placeholder="Buscar por nombre, empleado, vendor...">
+      <button class="button secondary" id="refreshBtn">↻ Refrescar</button>
+      <button class="button secondary" id="exportBtn">⬇ Exportar CSV</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>Certificación</th>
+            <th>Estado</th>
+            <th>Legajo</th>
+            <th>Empleado</th>
+            <th>Vendor</th>
+            <th>UN</th>
+            <th>Rol</th>
+            <th>Vencimiento</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody">
+          <tr>
+            <td colspan="9" class="loading">
+              <div class="spinner"></div>
+              <p>Cargando datos de SharePoint...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>CertTrack SP Validator v1.0 — Validación de conexión con SharePoint Online</p>
+  <p>Para abrir esta app dentro de SharePoint, accede desde: https://everisgroup.sharepoint.com/sites/DNAArgUY2</p>
+</footer>
+
+<script>
+// Configuration
+const CONFIG = {
+  mode: 'live', // live = SharePoint, demo = simulated
+  spListName: 'Certificaciones',
+  spSite: null, // Se obtiene de _spPageContextInfo
+};
+
+// Global State
+const STATE = {
+  connected: false,
+  user: null,
+  role: null,
+  data: [],
+  filtered: []
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('[CertTrack SP] Inicializando...');
+
+  // Detect SharePoint context
+  if (window._spPageContextInfo) {
+    CONFIG.spSite = _spPageContextInfo.webAbsoluteUrl;
+    STATE.user = _spPageContextInfo.userDisplayName;
+    STATE.role = detectRole();
+
+    console.log('[CertTrack SP] Contexto SP detectado:', {
+      site: CONFIG.spSite,
+      user: STATE.user,
+      role: STATE.role
+    });
+
+    updateConnectionUI(true);
+    await loadDataFromSP();
+  } else {
+    console.warn('[CertTrack SP] No se detectó contexto de SharePoint');
+    showMessage('⚠️ Esta aplicación debe abrirse desde SharePoint Online', 'warning');
+    showMessage('Abre desde: https://everisgroup.sharepoint.com/sites/DNAArgUY2', 'info');
+    updateConnectionUI(false);
+  }
+
+  // Attach event listeners
+  document.getElementById('searchBox').addEventListener('input', filterData);
+  document.getElementById('refreshBtn').addEventListener('click', loadDataFromSP);
+  document.getElementById('exportBtn').addEventListener('click', exportCSV);
+});
+
+// Detect user role from AD groups
+function detectRole() {
+  // In real scenario, check _spPageContextInfo.currentUser.loginName against groups
+  // For now, return generic role
+  if (STATE.user && STATE.user.includes('admin')) return 'admin';
+  return 'empleado';
+}
+
+// Update connection UI
+function updateConnectionUI(connected) {
+  STATE.connected = connected;
+
+  const badge = document.getElementById('statusBadge');
+  const statusText = document.getElementById('statusText');
+  const connectionStatus = document.getElementById('connectionStatus');
+
+  if (connected) {
+    badge.classList.remove('disconnected', 'loading');
+    badge.classList.add('connected');
+    statusText.textContent = 'Conectado';
+    connectionStatus.textContent = '✓ Conectado';
+    connectionStatus.classList.add('success');
+
+    document.getElementById('siteName').textContent = CONFIG.spSite || 'Everis';
+    document.getElementById('userName').textContent = STATE.user || 'Usuario';
+    document.getElementById('userRole').textContent = STATE.role || 'Empleado';
+  } else {
+    badge.classList.remove('connected');
+    badge.classList.add('disconnected');
+    statusText.textContent = 'Desconectado';
+    connectionStatus.textContent = '✗ Desconectado';
+    connectionStatus.classList.add('error');
+  }
+}
+
+// Load data from SharePoint
+async function loadDataFromSP() {
+  if (!STATE.connected) {
+    showMessage('❌ No hay conexión a SharePoint', 'error');
+    return;
+  }
+
+  const statusBadge = document.getElementById('statusBadge');
+  statusBadge.classList.add('loading');
+
+  try {
+    const listName = CONFIG.spListName;
+    const endpoint = `${CONFIG.spSite}/_api/web/lists/getByTitle('${listName}')/items?$top=5000`;
+
+    console.log('[CertTrack SP] Llamando a:', endpoint);
+
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    STATE.data = result.value || [];
+    STATE.filtered = [...STATE.data];
+
+    console.log(`[CertTrack SP] Cargados ${STATE.data.length} items`);
+
+    renderData();
+    renderStats();
+
+    showMessage(`✓ Cargadas ${STATE.data.length} certificaciones desde SharePoint`, 'success');
+
+    statusBadge.classList.remove('loading');
+    statusBadge.classList.add('connected');
+    document.getElementById('statusText').textContent = 'Conectado';
+
+  } catch (error) {
+    console.error('[CertTrack SP] Error:', error);
+    showMessage(`❌ Error al cargar datos: ${error.message}`, 'error');
+
+    statusBadge.classList.remove('loading');
+    statusBadge.classList.add('disconnected');
+    document.getElementById('statusText').textContent = 'Error';
+  }
+}
+
+// Render data table
+function renderData() {
+  const tbody = document.getElementById('dataBody');
+
+  if (STATE.filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">Sin resultados</td></tr>';
+    document.getElementById('dataCard').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('dataCard').style.display = 'block';
+
+  tbody.innerHTML = STATE.filtered.map(item => {
+    const cert = item.Certificaci_x00f3_n || item.Title || 'N/A';
+    const estado = item.Estado_x0020_Usuario === 'Activo' ? 'Activo' : 'Inactivo';
+    const legajo = item.N_x00fa_mero_x0020_de_x0020_Legajo || 'N/A';
+    const empleado = item.Nombre_x0020_Completo || 'N/A';
+    const vendor = item.Vendor || 'N/A';
+    const un = item.Business_x0020_Unit_x0028_UN_x0029_ || 'N/A';
+    const rol = item.Rol || 'N/A';
+    const vencimiento = item.Vencimiento ? formatDate(item.Vencimiento) : 'N/A';
+    const url = item.url || item.URL || null;
+
+    return `
+      <tr>
+        <td><strong>${cert}</strong></td>
+        <td><span class="badge ${estado === 'Activo' ? 'active' : 'inactive'}">${estado}</span></td>
+        <td>${legajo}</td>
+        <td>${empleado}</td>
+        <td><span class="vendor-badge ${getVendorClass(vendor)}">${vendor}</span></td>
+        <td>${un}</td>
+        <td>${rol}</td>
+        <td>${vencimiento}</td>
+        <td>
+          ${url ? `<a href="${url}" target="_blank" class="link-icon" title="Ver certificado">📄</a>` : '—'}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Render statistics
+function renderStats() {
+  const statsCard = document.getElementById('statsCard');
+  const statsGrid = document.getElementById('statsGrid');
+
+  if (STATE.data.length === 0) {
+    statsCard.style.display = 'none';
+    return;
+  }
+
+  statsCard.style.display = 'block';
+
+  const active = STATE.data.filter(d => d.Estado_x0020_Usuario === 'Activo').length;
+  const inactive = STATE.data.length - active;
+
+  const vendors = {};
+  STATE.data.forEach(d => {
+    const v = d.Vendor || 'Otro';
+    vendors[v] = (vendors[v] || 0) + 1;
+  });
+
+  let html = `
+    <div class="stat-card">
+      <div class="stat-value">${STATE.data.length}</div>
+      <div class="stat-label">Total Certificaciones</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--success);">${active}</div>
+      <div class="stat-label">Activas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--danger);">${inactive}</div>
+      <div class="stat-label">Inactivas</div>
+    </div>
+  `;
+
+  Object.entries(vendors).forEach(([vendor, count]) => {
+    html += `
+      <div class="stat-card">
+        <div class="stat-value">${count}</div>
+        <div class="stat-label">${vendor}</div>
+      </div>
+    `;
+  });
+
+  statsGrid.innerHTML = html;
+}
+
+// Filter data by search
+function filterData() {
+  const query = document.getElementById('searchBox').value.toLowerCase();
+
+  STATE.filtered = STATE.data.filter(item => {
+    const cert = (item.Certificaci_x00f3_n || '').toLowerCase();
+    const empleado = (item.Nombre_x0020_Completo || '').toLowerCase();
+    const vendor = (item.Vendor || '').toLowerCase();
+    const un = (item.Business_x0020_Unit_x0028_UN_x0029_ || '').toLowerCase();
+
+    return cert.includes(query) || empleado.includes(query) || vendor.includes(query) || un.includes(query);
+  });
+
+  renderData();
+}
+
+// Export to CSV
+function exportCSV() {
+  if (STATE.data.length === 0) {
+    showMessage('No hay datos para exportar', 'warning');
+    return;
+  }
+
+  const headers = ['Certificación', 'Estado', 'Legajo', 'Empleado', 'Vendor', 'UN', 'Rol', 'Vencimiento'];
+  const rows = STATE.data.map(item => [
+    item.Certificaci_x00f3_n || item.Title || '',
+    item.Estado_x0020_Usuario || '',
+    item.N_x00fa_mero_x0020_de_x0020_Legajo || '',
+    item.Nombre_x0020_Completo || '',
+    item.Vendor || '',
+    item.Business_x0020_Unit_x0028_UN_x0029_ || '',
+    item.Rol || '',
+    item.Vencimiento ? formatDate(item.Vencimiento) : ''
+  ]);
+
+  const csv = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `certificaciones_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+}
+
+// Utility: Format date
+function formatDate(dateStr) {
+  if (!dateStr) return 'N/A';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('es-AR');
+}
+
+// Utility: Get vendor CSS class
+function getVendorClass(vendor) {
+  if (!vendor) return 'other';
+  const v = vendor.toLowerCase();
+  if (v.includes('aws')) return 'aws';
+  if (v.includes('azure')) return 'azure';
+  if (v.includes('gcp') || v.includes('google')) return 'gcp';
+  return 'other';
+}
+
+// Utility: Show message
+function showMessage(text, type = 'info') {
+  const container = document.getElementById('messageContainer');
+  const msgClass = type === 'error' ? 'error-message' : type === 'success' ? 'success-message' : 'warning-message';
+  const msg = document.createElement('div');
+  msg.className = msgClass;
+  msg.textContent = text;
+  container.appendChild(msg);
+
+  // Auto-remove after 5 seconds
+  if (type === 'success' || type === 'info') {
+    setTimeout(() => msg.remove(), 5000);
+  }
+}
+
+// Debug logging
+console.log('[CertTrack SP] Aplicación inicializada');
+console.log('[CertTrack SP] Para debuguear, abre la consola (F12)');
+</script>
+
+</body>
+</html>

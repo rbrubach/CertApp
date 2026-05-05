@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CertTrack IT — Gestión de Certificaciones</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Aptos:wght@400;600;700;800&display=swap');</style>
+<style>
+:root{
+  --bg:#0e1117; --s1:#161b27; --s2:#1e2535; --s3:#252d3e;
+  --border:#2a3349; --border2:#3a4460;
+  --ink:#e8eaf2; --ink2:#8892a4; --ink3:#525d72;
+  --accent:#4f8ef7; --accent-s:rgba(79,142,247,.12);
+  --gcp:#ea4335; --gcp-s:rgba(234,67,53,.12);
+  --azure:#0078d4; --azure-s:rgba(0,120,212,.12);
+  --aws:#ff9900; --aws-s:rgba(255,153,0,.12);
+  --db:#ff3621; --db-s:rgba(255,54,33,.12);
+  --ggl:#4285f4; --ggl-s:rgba(66,133,244,.12);
+  --hc:#7b42bc; --hc-s:rgba(123,66,188,.12);
+  --warn:#f59e0b; --warn-s:rgba(245,158,11,.12);
+  --danger:#ef4444; --danger-s:rgba(239,68,68,.12);
+  --success:#22c55e; --success-s:rgba(34,197,94,.12);
+  --admin:#a78bfa; --admin-s:rgba(167,139,250,.12);
+  --r:10px; --r2:14px;
+  --sh:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --sh-lg:0 8px 32px rgba(0,0,0,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{font-family:'Aptos','Arial',sans-serif;font-size:14px;background:var(--bg);color:var(--ink);line-height:1.5;}
+button,input,select,textarea{font-family:inherit;font-size:inherit;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+
+/* ── HEADER ── */
+header{
+  background:var(--s1);border-bottom:1px solid var(--border);
+  padding:0 24px;height:56px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:300;
+}
+.logo{font-family:'Aptos','Arial',sans-serif;font-size:19px;font-weight:800;letter-spacing:-1px;color:var(--ink);}
+.logo em{color:var(--accent);font-style:normal;}
+.logo small{font-size:10px;font-weight:600;color:var(--ink3);background:var(--s3);border:1px solid var(--border);padding:2px 7px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;margin-left:6px;vertical-align:middle;}
+.sep{flex:1;}
+.role-pill{padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.3px;}
+.role-pill.admin{background:var(--admin-s);color:var(--admin);border:1px solid rgba(167,139,250,.2);}
+.role-pill.employee{background:var(--accent-s);color:var(--accent);border:1px solid rgba(79,142,247,.2);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:99px;padding:5px 14px 5px 5px;cursor:pointer;font-size:12px;transition:border-color .15s;}
+.user-chip:hover{border-color:var(--accent);}
+.uav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Aptos','Arial',sans-serif;font-weight:800;font-size:10px;background:var(--accent);}
+.uav.admin-av{background:var(--admin);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--warn);animation:blink 2s infinite;}
+.live-dot.on{background:var(--success);animation:none;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── SIDEBAR ── */
+.shell{display:flex;height:calc(100vh - 56px);}
+.sidebar{
+  width:220px;background:var(--s1);border-right:1px solid var(--border);
+  padding:16px 10px;display:flex;flex-direction:column;gap:2px;
+  overflow-y:auto;flex-shrink:0;
+}
+.sb-section{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);padding:10px 10px 4px;margin-top:6px;}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:8px;cursor:pointer;color:var(--ink2);font-size:13px;font-weight:500;
+  transition:all .13s;border:none;background:none;width:100%;text-align:left;
+}
+.sb-item:hover{color:var(--ink);background:var(--s2);}
+.sb-item.active{color:var(--accent);background:var(--accent-s);}
+.sb-item.admin-item{color:var(--admin);}
+.sb-item.admin-item.active{background:var(--admin-s);}
+.sb-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;}
+.sb-icon{font-size:15px;width:18px;text-align:center;}
+.sidebar-sep{height:1px;background:var(--border);margin:8px 0;}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;padding:28px 32px;}
+.page{display:none;}
+.page.active{display:block;animation:up .18s ease;}
+@keyframes up{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap;}
+.ph h1{font-family:'Aptos','Arial',sans-serif;font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1.1;}
+.ph p{color:var(--ink2);font-size:13px;margin-top:3px;}
+.ph-actions{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;}
+
+/* ── GRID ── */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;}
+.g2r{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:22px;}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--sh);}
+.cb{padding:18px 22px;}
+.ct{font-family:'Aptos','Arial',sans-serif;font-size:13px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+
+/* ── STAT ── */
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;box-shadow:var(--sh);transition:transform .15s,border-color .15s;position:relative;overflow:hidden;}
+.stat:hover{transform:translateY(-2px);border-color:var(--border2);}
+.stat-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:5px;}
+.stat-val{font-family:'Aptos','Arial',sans-serif;font-size:32px;font-weight:800;letter-spacing:-2px;line-height:1;}
+.stat-sub{font-size:11px;color:var(--ink2);margin-top:5px;}
+.stat::after{content:'';position:absolute;bottom:-16px;right:-16px;width:56px;height:56px;border-radius:50%;opacity:.08;}
+.stat.blue .stat-val{color:var(--accent);}     .stat.blue::after{background:var(--accent);}
+.stat.green .stat-val{color:var(--success);}   .stat.green::after{background:var(--success);}
+.stat.warn .stat-val{color:var(--warn);}        .stat.warn::after{background:var(--warn);}
+.stat.red .stat-val{color:var(--danger);}       .stat.red::after{background:var(--danger);}
+.stat.purple .stat-val{color:var(--admin);}     .stat.purple::after{background:var(--admin);}
+
+/* ── BTNS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;font-family:'Aptos','Arial',sans-serif;font-weight:700;font-size:12px;letter-spacing:.2px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#3a7ae8;box-shadow:0 4px 14px rgba(79,142,247,.35);}
+.btn-admin{background:var(--admin);color:#fff;}
+.btn-admin:hover{background:#8b73e8;}
+.btn-outline{background:transparent;color:var(--ink2);border:1px solid var(--border2);}
+.btn-outline:hover{color:var(--ink);border-color:var(--ink2);}
+.btn-ghost{background:transparent;color:var(--ink2);border:none;}
+.btn-ghost:hover{color:var(--ink);background:var(--s2);}
+.btn-danger{background:var(--danger-s);color:var(--danger);border:1px solid rgba(239,68,68,.3);}
+.btn-danger:hover{background:rgba(239,68,68,.2);}
+.btn-warn{background:var(--warn-s);color:var(--warn);border:1px solid rgba(245,158,11,.3);}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.btn-xs{padding:3px 8px;font-size:10px;border-radius:5px;}
+.btn-icon{width:30px;height:30px;padding:0;justify-content:center;border-radius:7px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.2px;}
+.t-active{background:var(--success-s);color:var(--success);}
+.t-warn{background:var(--warn-s);color:var(--warn);}
+.t-danger{background:var(--danger-s);color:var(--danger);}
+.t-process{background:var(--accent-s);color:var(--accent);}
+.t-neutral{background:var(--s3);color:var(--ink2);}
+.t-admin{background:var(--admin-s);color:var(--admin);}
+
+/* ── CLOUD VENDOR BADGES ── */
+.vendor{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;}
+.v-gcp{background:var(--gcp-s);color:var(--gcp);}
+.v-azure{background:var(--azure-s);color:var(--azure);}
+.v-aws{background:var(--aws-s);color:var(--aws);}
+.v-databricks{background:var(--db-s);color:var(--db);}
+.v-google{background:var(--ggl-s);color:var(--ggl);}
+.v-hashicorp{background:var(--hc-s);color:var(--hc);}
+.v-otro{background:var(--s3);color:var(--ink2);}
+
+/* ── TABLE ── */
+.tbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.tinput{flex:1;min-width:180px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--ink);outline:none;transition:border-color .15s;}
+.tinput:focus{border-color:var(--accent);}
+.tinput::placeholder{color:var(--ink3);}
+.tsel{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--ink);outline:none;cursor:pointer;transition:border-color .15s;}
+.tsel:focus{border-color:var(--accent);}
+table{width:100%;border-collapse:collapse;}
+thead th{text-align:left;padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--border);font-weight:700;cursor:pointer;user-select:none;white-space:nowrap;}
+thead th:hover{color:var(--ink2);}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--s2);}
+tbody td{padding:12px 14px;font-size:13px;}
+.td-main{font-weight:600;color:var(--ink);}
+.td-sub{font-size:11px;color:var(--ink2);margin-top:1px;}
+
+/* ── CERT CARDS ── */
+.cert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.ccard{
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  padding:18px;transition:all .15s;position:relative;overflow:hidden;cursor:pointer;
+}
+.ccard:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--sh-lg);}
+.ccard .rbn{position:absolute;top:0;left:0;right:0;height:3px;}
+.ccard.cc-ok .rbn{background:var(--success);}
+.ccard.cc-warn .rbn{background:var(--warn);}
+.ccard.cc-exp .rbn{background:var(--danger);}
+.ccard.cc-proc .rbn{background:var(--accent);}
+.ccard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px;}
+.ccard-name{font-family:'Aptos','Arial',sans-serif;font-weight:700;font-size:14px;letter-spacing:-.3px;line-height:1.2;}
+.ccard-entity{font-size:11px;color:var(--ink2);margin-top:3px;}
+.ccard-meta{display:flex;flex-direction:column;gap:5px;margin:10px 0;}
+.crow{display:flex;justify-content:space-between;font-size:12px;}
+.crow span:first-child{color:var(--ink2);}
+.crow span:last-child{font-weight:600;}
+.ccard-foot{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.ccard-foot .btn{flex:1;justify-content:center;}
+
+/* ── SKILL BAR ── */
+.skill-bar-wrap{margin-bottom:12px;}
+.skill-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:12px;}
+.skill-bar{height:8px;background:var(--s3);border-radius:99px;overflow:hidden;}
+.skill-fill{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:var(--s1);border:1px solid var(--border2);border-radius:16px;width:800px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:mi .2s ease;}
+@keyframes mi{from{transform:translateY(14px) scale(.97);opacity:0;}to{transform:none;opacity:1;}}
+.mhdr{padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--s1);z-index:1;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.mhdr h2{font-family:'Aptos','Arial',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.5px;}
+.mclose{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:none;cursor:pointer;font-size:15px;color:var(--ink2);display:flex;align-items:center;justify-content:center;}
+.mclose:hover{background:var(--s2);color:var(--ink);}
+.mbody{padding:20px 24px;}
+.mftr{padding:14px 24px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--s1);}
+
+/* ── FORM ── */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.fg label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);}
+.fg input,.fg select,.fg textarea{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--ink);outline:none;transition:border-color .15s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);}
+.fg textarea{resize:vertical;min-height:65px;}
+.fg .hint{font-size:11px;color:var(--ink3);margin-top:3px;}
+
+/* ── UPLOAD ── */
+.dropzone{border:1.5px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--s2);}
+.dropzone:hover,.dropzone.drag{border-color:var(--accent);background:var(--accent-s);}
+.dz-icon{font-size:22px;margin-bottom:6px;}
+.dropzone p{font-size:12px;color:var(--ink2);}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:5px;}
+.file-item{display:flex;align-items:center;gap:8px;padding:7px 11px;background:var(--s1);border:1px solid var(--border);border-radius:7px;font-size:12px;}
+.file-name{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fdel{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:13px;}
+.fdel:hover{color:var(--danger);}
+
+/* ── ABM MASTER ── */
+.master-list{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;}
+.master-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:8px;transition:border-color .15s;}
+.master-item:hover{border-color:var(--border2);}
+.mi-name{flex:1;font-size:13px;font-weight:600;}
+.mi-sub{font-size:11px;color:var(--ink2);}
+.master-add{display:flex;gap:8px;margin-top:10px;}
+.master-add input,.master-add select{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--ink);outline:none;}
+.master-add input:focus,.master-add select:focus{border-color:var(--accent);}
+
+/* ── ROADMAP ── */
+.roadmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.roadmap-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;transition:all .15s;}
+.roadmap-card:hover{border-color:var(--border2);}
+.rm-status{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-bottom:8px;}
+.rm-planned{background:var(--s3);color:var(--ink2);}
+.rm-progress{background:var(--accent-s);color:var(--accent);}
+.rm-done{background:var(--success-s);color:var(--success);}
+.rm-name{font-weight:700;font-size:13px;margin-bottom:3px;}
+.rm-entity{font-size:11px;color:var(--ink2);margin-bottom:8px;}
+.rm-bar{height:5px;background:var(--s3);border-radius:99px;overflow:hidden;margin-bottom:6px;}
+.rm-fill{height:100%;background:var(--accent);border-radius:99px;}
+.rm-dates{font-size:11px;color:var(--ink3);}
+
+/* ── BUDGET ── */
+.budget-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.bc-label{font-size:11px;color:var(--ink2);margin-bottom:4px;}
+.bc-val{font-family:'Aptos','Arial',sans-serif;font-size:22px;font-weight:800;letter-spacing:-1px;}
+
+/* ── SKILLS DASHBOARD ── */
+.vendor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
+.vendor-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .15s;cursor:pointer;}
+.vendor-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.vc-logo{font-size:28px;margin-bottom:8px;}
+.vc-name{font-family:'Aptos','Arial',sans-serif;font-weight:800;font-size:14px;margin-bottom:2px;}
+.vc-count{font-size:12px;color:var(--ink2);}
+.vc-bar{height:4px;border-radius:99px;margin-top:10px;background:var(--s3);overflow:hidden;}
+.vc-fill{height:100%;border-radius:99px;}
+
+/* ── REPORT ── */
+.report-table{width:100%;border-collapse:collapse;font-size:12px;}
+.report-table th{background:var(--s3);padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);font-weight:700;}
+.report-table td{padding:8px 12px;border-top:1px solid var(--border);}
+.report-table tr:hover td{background:var(--s2);}
+
+/* ── TIMELINE ── */
+.tl{position:relative;padding-left:22px;}
+.tl::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--border);}
+.tl-item{position:relative;margin-bottom:13px;}
+.tl-item::before{content:'';position:absolute;left:-19px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--s1);background:var(--border2);}
+.tl-item.tl-r::before{background:var(--danger);}
+.tl-item.tl-w::before{background:var(--warn);}
+.tl-item.tl-g::before{background:var(--success);}
+.tl-main{font-size:13px;font-weight:600;}
+.tl-sub{font-size:11px;color:var(--ink2);}
+
+/* ── SP STATUS BAR ── */
+.spbar{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--s2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--ink2);margin-bottom:18px;}
+
+/* ── CONFIG PANEL ── */
+.cfgpanel{background:var(--s1);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:20px;}
+.cfgpanel h3{font-family:'Aptos','Arial',sans-serif;font-size:15px;font-weight:800;margin-bottom:14px;}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cfg-fg{display:flex;flex-direction:column;gap:5px;}
+.cfg-fg label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);}
+.cfg-fg input,.cfg-fg select{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--ink);outline:none;transition:border-color .15s;}
+.cfg-fg input:focus,.cfg-fg select:focus{border-color:var(--accent);}
+.cfg-actions{display:flex;gap:8px;align-items:center;margin-top:14px;}
+.cfg-status{font-size:12px;color:var(--ink2);}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--s2);color:var(--ink);border:1px solid var(--border2);padding:11px 16px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--sh-lg);animation:si .2s ease;display:flex;align-items:center;gap:9px;}
+@keyframes si{from{transform:translateX(30px);opacity:0;}to{transform:none;opacity:1;}}
+.toast.success{border-color:var(--success);color:var(--success);}
+.toast.warn{border-color:var(--warn);color:var(--warn);}
+.toast.error{border-color:var(--danger);color:var(--danger);}
+
+/* ── TABS (inside pages) ── */
+.inner-tabs{display:flex;gap:2px;margin-bottom:18px;background:var(--s2);border-radius:9px;padding:3px;}
+.itab{padding:7px 14px;border-radius:7px;border:none;background:none;color:var(--ink2);font-family:'Aptos','Arial',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:all .13s;}
+.itab.active{background:var(--s1);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 20px;color:var(--ink2);}
+.empty-icon{font-size:44px;margin-bottom:10px;}
+.empty h3{font-family:'Aptos','Arial',sans-serif;font-size:16px;font-weight:800;color:var(--ink);margin-bottom:5px;}
+
+/* ── MISC ── */
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.note-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--ink2);line-height:1.7;}
+.note-box strong{color:var(--ink);}
+
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .g4{grid-template-columns:1fr 1fr;}
+  .g3,.g2,.g2r{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="logo">Cert<em>Track</em><small>IT</small></div>
+  <div class="sep"></div>
+  <div class="live-dot" id="liveDot"></div>
+  <div class="role-pill employee" id="rolePill">👤 Empleado</div>
+  <div class="user-chip" onclick="toggleCfg()">
+    <div class="uav" id="uav">--</div>
+    <span id="uName">Cuenta</span>
+    <span style="color:var(--ink3);font-size:10px">⚙</span>
+  </div>
+</header>
+
+<!-- ═══ SHELL ═══ -->
+<div class="shell">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-section">General</div>
+  <button class="sb-item active" onclick="goPage('home')" data-p="home"><span class="sb-icon">🏠</span> Dashboard</button>
+  <button class="sb-item" onclick="goPage('mis-certs')" data-p="mis-certs"><span class="sb-icon">🏅</span> Mis Certificaciones</button>
+  <button class="sb-item" onclick="goPage('alertas')" data-p="alertas"><span class="sb-icon">🔔</span> Alertas <span class="sb-badge" id="alertBadge" style="display:none">0</span></button>
+  <button class="sb-item" onclick="goPage('roadmap')" data-p="roadmap"><span class="sb-icon">🗺</span> Mi Roadmap</button>
+
+  <div class="sidebar-sep"></div>
+  <div class="sb-section">Administración</div>
+  <button class="sb-item admin-item" id="sbTodas" onclick="goPage('todas')" data-p="todas" style="display:none"><span class="sb-icon">📋</span> Todas</button>
+  <button class="sb-item admin-item" id="sbEmpleados" onclick="goPage('empleados')" data-p="empleados" style="display:none"><span class="sb-icon">👥</span> Colaboradores</button>
+  <button class="sb-item admin-item" id="sbSkills" onclick="goPage('skills')" data-p="skills" style="display:none"><span class="sb-icon">☁️</span> Skills Cloud</button>
+  <button class="sb-item admin-item" id="sbBudget" onclick="goPage('budget')" data-p="budget" style="display:none"><span class="sb-icon">💰</span> Presupuesto</button>
+  <button class="sb-item admin-item" id="sbReporte" onclick="goPage('reporte')" data-p="reporte" style="display:none"><span class="sb-icon">📊</span> Reporte Clientes</button>
+
+  <div class="sidebar-sep"></div>
+  <div class="sb-section">Maestros</div>
+  <button class="sb-item admin-item" id="sbMaestros" onclick="goPage('maestros')" data-p="maestros" style="display:none"><span class="sb-icon">📂</span> ABM Maestros</button>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+<!-- CONFIG PANEL -->
+<div id="cfgPanel" style="display:none;">
+  <div class="cfgpanel">
+    <h3>⚙ Configuración SharePoint</h3>
+    <div class="cfg-grid">
+      <div class="cfg-fg"><label>URL del Sitio</label><input id="cfgUrl" value="https://empresa.sharepoint.com/sites/certtrack"></div>
+      <div class="cfg-fg"><label>Lista Certificaciones</label><input id="cfgList" value="Certificaciones"></div>
+      <div class="cfg-fg"><label>Lista Colaboradores</label><input id="cfgColabs" value="Colaboradores"></div>
+      <div class="cfg-fg"><label>Lista Maestro Certs</label><input id="cfgMCerts" value="MaestroCertificaciones"></div>
+      <div class="cfg-fg"><label>Lista Entidades</label><input id="cfgEnt" value="Entidades"></div>
+      <div class="cfg-fg"><label>Lista Roadmap</label><input id="cfgRoad" value="Roadmap"></div>
+      <div class="cfg-fg"><label>Grupo Admins</label><input id="cfgAdmGrp" value="CertTrack_Admins"></div>
+      <div class="cfg-fg"><label>Modo</label>
+        <select id="cfgMode" onchange="onModeChange()">
+          <option value="demo">Demo</option>
+          <option value="live">SharePoint REST API</option>
+        </select>
+      </div>
+      <div class="cfg-fg" id="demoRoleWrap"><label>Simular Rol (demo)</label>
+        <select id="demoRole" onchange="applyDemoRole()">
+          <option value="emp1">Empleado — Lucas Méndez</option>
+          <option value="emp2">Empleado — Valentina Cruz</option>
+          <option value="emp3">Empleado — Rodrigo Paz</option>
+          <option value="admin">Admin RRHH</option>
+        </select>
+      </div>
+    </div>
+    <div class="cfg-actions">
+      <button class="btn btn-primary btn-sm" onclick="connectSP()">Conectar</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleCfg()">Cerrar</button>
+      <span class="cfg-status" id="cfgStatus">Demo activo</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: HOME ═══ -->
+<div id="page-home" class="page active">
+  <div class="ph">
+    <div><h1>Dashboard <span id="homeRoleLabel" style="font-size:16px;color:var(--ink2)"></span></h1><p id="homeSub">Resumen general de certificaciones</p></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline btn-sm" onclick="goPage('alertas')">🔔 Ver alertas</button>
+      <button class="btn btn-primary" onclick="openCertModal()">＋ Nueva Certificación</button>
+    </div>
+  </div>
+  <div class="spbar"><div class="live-dot" id="spDot"></div><span id="spBarTxt">Iniciando...</span></div>
+
+  <div class="g4" id="homeStats"></div>
+
+  <div class="g2">
+    <div class="card"><div class="cb"><div class="ct">Estado por Proveedor Cloud</div><div id="homeProv"></div></div></div>
+    <div class="card"><div class="cb"><div class="ct">Vencimientos Próximos</div><div class="tl" id="homeTl"></div></div></div>
+  </div>
+
+  <div id="adminHomeSection" style="display:none;">
+    <div class="g2">
+      <div class="card"><div class="cb">
+        <div class="ct">Colaboradores con Alertas <button class="btn btn-ghost btn-xs" onclick="goPage('empleados')">Ver todos →</button></div>
+        <div id="homeEmpAlerts"></div>
+      </div></div>
+      <div class="card"><div class="cb">
+        <div class="ct">Distribución de Skills Cloud</div>
+        <div id="homeSkillPie"></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: MIS CERTS ═══ -->
+<div id="page-mis-certs" class="page">
+  <div class="ph">
+    <div><h1>Mis Certificaciones</h1><p id="myLegajoBanner" style="color:var(--ink2)"></p></div>
+    <button class="btn btn-primary" onclick="openCertModal()">＋ Agregar</button>
+  </div>
+  <div class="tbar">
+    <input class="tinput" id="mcQ" placeholder="🔍 Buscar..." oninput="renderMisCerts()">
+    <select class="tsel" id="mcSt" onchange="renderMisCerts()"><option value="">Estado</option><option>Vigente</option><option>Por Vencer</option><option>Vencida</option><option>En Proceso</option></select>
+    <select class="tsel" id="mcVend" onchange="renderMisCerts()"><option value="">Proveedor</option></select>
+  </div>
+  <div class="cert-grid" id="misCertsGrid"></div>
+</div>
+
+<!-- ═══ PAGE: ALERTAS ═══ -->
+<div id="page-alertas" class="page">
+  <div class="ph"><div><h1>Alertas</h1><p id="alertsSub">Certificaciones que requieren atención</p></div></div>
+  <div id="alertsList"></div>
+</div>
+
+<!-- ═══ PAGE: ROADMAP ═══ -->
+<div id="page-roadmap" class="page">
+  <div class="ph">
+    <div><h1>Mi Roadmap de Certificaciones</h1><p>Plan de certificaciones planificadas y en curso</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openRoadmapModal()">＋ Agregar al Plan</button>
+  </div>
+  <div class="inner-tabs">
+    <button class="itab active" onclick="setRmFilter('all',this)">Todos</button>
+    <button class="itab" onclick="setRmFilter('Planificado',this)">Planificados</button>
+    <button class="itab" onclick="setRmFilter('En Progreso',this)">En Progreso</button>
+    <button class="itab" onclick="setRmFilter('Completado',this)">Completados</button>
+  </div>
+  <div class="roadmap-grid" id="roadmapGrid"></div>
+</div>
+
+<!-- ═══ PAGE: TODAS (ADMIN) ═══ -->
+<div id="page-todas" class="page">
+  <div class="ph">
+    <div><h1>Todas las Certificaciones</h1><p>Vista completa · Acceso administrador</p></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ CSV</button>
+      <button class="btn btn-admin" onclick="openCertModal()">＋ Nueva</button>
+    </div>
+  </div>
+  <div class="tbar">
+    <input class="tinput" id="allQ" placeholder="🔍 Legajo, nombre, cert..." oninput="renderAllTable()">
+    <select class="tsel" id="allSt" onchange="renderAllTable()"><option value="">Estado</option><option>Vigente</option><option>Por Vencer</option><option>Vencida</option></select>
+    <select class="tsel" id="allVend" onchange="renderAllTable()"><option value="">Proveedor</option></select>
+    <select class="tsel" id="allEmpF" onchange="renderAllTable()"><option value="">Colaborador</option></select>
+    <select class="tsel" id="allArea" onchange="renderAllTable()"><option value="">Área</option></select>
+  </div>
+  <div class="card" style="overflow:hidden;padding:0;">
+    <table>
+      <thead><tr>
+        <th onclick="sortTbl('legajo')">Legajo ⇅</th>
+        <th onclick="sortTbl('colaborador')">Colaborador ⇅</th>
+        <th onclick="sortTbl('certificacion')">Certificación ⇅</th>
+        <th onclick="sortTbl('proveedor')">Proveedor ⇅</th>
+        <th onclick="sortTbl('nivel')">Nivel ⇅</th>
+        <th onclick="sortTbl('fechaVencimiento')">Vencimiento ⇅</th>
+        <th onclick="sortTbl('_d')">Días ⇅</th>
+        <th>Estado</th>
+        <th>Costo</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="allTbody"></tbody>
+    </table>
+    <div id="allPager" style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--ink2);"></div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: COLABORADORES (ADMIN) ═══ -->
+<div id="page-empleados" class="page">
+  <div class="ph">
+    <div><h1>Colaboradores</h1><p>Estado de certificaciones por persona</p></div>
+    <button class="btn btn-admin btn-sm" onclick="openColabModal()">＋ Colaborador</button>
+  </div>
+  <div class="tbar">
+    <input class="tinput" id="empQ" placeholder="🔍 Legajo, nombre, área..." oninput="renderEmpleados()">
+    <select class="tsel" id="empAreaF" onchange="renderEmpleados()"><option value="">Todas las áreas</option></select>
+    <select class="tsel" id="empSenF" onchange="renderEmpleados()"><option value="">Seniority</option><option>Junior</option><option>Semi Senior</option><option>Senior</option><option>Lead</option></select>
+  </div>
+  <div class="card" style="overflow:hidden;padding:0;">
+    <table>
+      <thead><tr>
+        <th onclick="sortEmp('legajo')">Legajo ⇅</th>
+        <th onclick="sortEmp('nombre')">Nombre ⇅</th>
+        <th onclick="sortEmp('area')">Área ⇅</th>
+        <th onclick="sortEmp('seniority')">Seniority ⇅</th>
+        <th>Evaluador P&G</th>
+        <th>Líder Proyecto</th>
+        <th>Stack</th>
+        <th>Certs Vigentes</th>
+        <th>Alertas</th>
+        <th>Ingreso</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="empTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PAGE: SKILLS CLOUD (ADMIN) ═══ -->
+<div id="page-skills" class="page">
+  <div class="ph"><div><h1>Skills Cloud</h1><p>Mapa de certificaciones cloud del equipo</p></div></div>
+  <div class="vendor-grid" id="skillsVendorGrid"></div>
+  <div class="g2">
+    <div class="card"><div class="cb"><div class="ct">Certificaciones por Nivel</div><div id="skillsByLevel"></div></div></div>
+    <div class="card"><div class="cb"><div class="ct">Top Colaboradores Certificados</div><div id="topCertified"></div></div></div>
+  </div>
+  <div class="card"><div class="cb">
+    <div class="ct">Detalle por Proveedor</div>
+    <div id="skillsDetail"></div>
+  </div></div>
+</div>
+
+<!-- ═══ PAGE: PRESUPUESTO (ADMIN) ═══ -->
+<div id="page-budget" class="page">
+  <div class="ph">
+    <div><h1>Presupuesto de Certificaciones</h1><p>Control de costos del año en curso</p></div>
+    <button class="btn btn-outline btn-sm" onclick="openBudgetModal()">⚙ Config. presupuesto</button>
+  </div>
+  <div class="g4" id="budgetStats"></div>
+  <div class="g2">
+    <div class="card"><div class="cb"><div class="ct">Gasto por Proveedor</div><div id="budgetByVendor"></div></div></div>
+    <div class="card"><div class="cb"><div class="ct">Gasto por Área</div><div id="budgetByArea"></div></div></div>
+  </div>
+  <div class="card" style="overflow:hidden;padding:0;"><table>
+    <thead><tr><th>Colaborador</th><th>Legajo</th><th>Certificación</th><th>Proveedor</th><th>Costo</th><th>Fecha</th><th>Estado</th></tr></thead>
+    <tbody id="budgetTbody"></tbody>
+  </table></div>
+</div>
+
+<!-- ═══ PAGE: REPORTE CLIENTES (ADMIN) ═══ -->
+<div id="page-reporte" class="page">
+  <div class="ph">
+    <div><h1>Reporte para Clientes</h1><p>Exporta las certificaciones del equipo por proyecto o cliente</p></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportReporteCSV()">↓ CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="printReporte()">🖨 Imprimir</button>
+    </div>
+  </div>
+  <div class="card"><div class="cb">
+    <div class="ct">Filtros del reporte</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <select class="tsel" id="rptArea" onchange="renderReporte()"><option value="">Todas las áreas</option></select>
+      <select class="tsel" id="rptVend" onchange="renderReporte()"><option value="">Todos los proveedores</option></select>
+      <select class="tsel" id="rptSt" onchange="renderReporte()"><option value="">Estado</option><option>Vigente</option><option>Por Vencer</option></select>
+    </div>
+  </div></div>
+  <div style="margin-top:16px;" id="reporteContent"></div>
+</div>
+
+<!-- ═══ PAGE: ABM MAESTROS (ADMIN) ═══ -->
+<div id="page-maestros" class="page">
+  <div class="ph"><div><h1>ABM Maestros</h1><p>Gestión de certificaciones y entidades certificadoras</p></div></div>
+  <div class="g2">
+    <!-- Maestro Certificaciones -->
+    <div class="card"><div class="cb">
+      <div class="ct">Certificaciones Maestro <span class="tag t-neutral" id="mcCount">0</span></div>
+      <div class="master-list" id="masterCertList"></div>
+      <div class="master-add" style="margin-top:12px;">
+        <input id="newCertName" placeholder="Nombre de la certificación">
+        <select id="newCertVend"></select>
+        <input id="newCertLevel" placeholder="Nivel (Associate, Pro...)" style="max-width:160px">
+        <button class="btn btn-primary btn-sm" onclick="addMasterCert()">＋</button>
+      </div>
+    </div></div>
+    <!-- Maestro Entidades -->
+    <div class="card"><div class="cb">
+      <div class="ct">Entidades Certificadoras <span class="tag t-neutral" id="meCount">0</span></div>
+      <div class="master-list" id="masterEntList"></div>
+      <div class="master-add" style="margin-top:12px;">
+        <input id="newEntName" placeholder="Nombre de la entidad">
+        <select id="newEntVend2"></select>
+        <input id="newEntUrl" placeholder="URL (opcional)" style="max-width:160px">
+        <button class="btn btn-primary btn-sm" onclick="addMasterEnt()">＋</button>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ═══ MODAL: CERTIFICACIÓN ═══ -->
+<div class="overlay" id="certOverlay" onclick="closeOverlay('certOverlay',event)">
+  <div class="modal">
+    <div class="mhdr"><h2 id="certModalTitle">Nueva Certificación</h2><button class="mclose" onclick="closeMod('certOverlay')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="fCertId">
+      <div class="fgrid">
+        <div class="fg" id="fColabWrap">
+          <label>Colaborador *</label>
+          <select id="fColab" onchange="onColabChange()"></select>
+        </div>
+        <div class="fg"><label>Legajo</label><input id="fLegajo" readonly style="color:var(--ink3)"></div>
+        <div class="fg">
+          <label>Certificación * (del maestro)</label>
+          <select id="fCertMaster" onchange="onCertMasterChange()">
+            <option value="">— Seleccionar —</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Entidad Certificadora *</label>
+          <select id="fEntidad"><option value="">— Seleccionar —</option></select>
+        </div>
+        <div class="fg"><label>Proveedor</label><input id="fProv" readonly style="color:var(--ink3)"></div>
+        <div class="fg"><label>Nivel</label><input id="fNivel" readonly style="color:var(--ink3)"></div>
+        <div class="fg"><label>Fecha Emisión</label><input id="fEmision" type="date"></div>
+        <div class="fg"><label>Fecha Vencimiento *</label><input id="fVence" type="date"></div>
+        <div class="fg"><label>N° Certificado</label><input id="fNumCert" placeholder="Código o ID"></div>
+        <div class="fg"><label>Costo (USD)</label><input id="fCosto" type="number" min="0" placeholder="0"></div>
+        <div class="fg full"><label>Notas</label><textarea id="fNotas" placeholder="Observaciones, link de verificación, etc."></textarea></div>
+        <div class="fg full">
+          <label>Documento / Badge</label>
+          <div class="dropzone" id="dropZone"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="handleDrop(event)"
+            onclick="document.getElementById('fileInput').click()">
+            <div class="dz-icon">📎</div>
+            <p><strong style="color:var(--accent)">Clic</strong> o arrastra · PDF, PNG, JPG · máx 10 MB</p>
+          </div>
+          <input type="file" id="fileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFiles(this.files)">
+          <div class="file-list" id="fileList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-outline" onclick="closeMod('certOverlay')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCert()"><span id="certSaveTxt">Guardar</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: ROADMAP ═══ -->
+<div class="overlay" id="rmOverlay" onclick="closeOverlay('rmOverlay',event)">
+  <div class="modal">
+    <div class="mhdr"><h2 id="rmModalTitle">Agregar al Roadmap</h2><button class="mclose" onclick="closeMod('rmOverlay')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="fRmId">
+      <div class="fgrid">
+        <div class="fg" id="fRmColabWrap"><label>Colaborador</label><select id="fRmColab"></select></div>
+        <div class="fg"><label>Certificación (del maestro)</label><select id="fRmCert"><option value="">— Seleccionar —</option></select></div>
+        <div class="fg"><label>Estado</label>
+          <select id="fRmStatus"><option>Planificado</option><option>En Progreso</option><option>Completado</option></select>
+        </div>
+        <div class="fg"><label>Prioridad</label>
+          <select id="fRmPrio"><option>Alta</option><option>Media</option><option>Baja</option></select>
+        </div>
+        <div class="fg"><label>Fecha Inicio Estimada</label><input id="fRmStart" type="date"></div>
+        <div class="fg"><label>Fecha Objetivo</label><input id="fRmTarget" type="date"></div>
+        <div class="fg"><label>Progreso (%)</label><input id="fRmPct" type="number" min="0" max="100" value="0"></div>
+        <div class="fg"><label>Costo Estimado (USD)</label><input id="fRmCost" type="number" min="0" placeholder="0"></div>
+        <div class="fg full"><label>Observaciones</label><textarea id="fRmNotes" placeholder="Patrocinio, proveedor de estudio, etc."></textarea></div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-outline" onclick="closeMod('rmOverlay')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRoadmap()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: COLABORADOR ═══ -->
+<div class="overlay" id="colabOverlay" onclick="closeOverlay('colabOverlay',event)">
+  <div class="modal" style="width:800px">
+    <div class="mhdr"><h2 id="colabModalTitle">Nuevo Colaborador</h2><button class="mclose" onclick="closeMod('colabOverlay')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="fColabId">
+      <div class="inner-tabs" style="margin-bottom:16px">
+        <button class="itab active" id="colabTabBtn1" onclick="colabTab('datos',this)">📋 Datos</button>
+        <button class="itab" id="colabTabBtn2" onclick="colabTab('relaciones',this)" style="display:none">📊 Performance &amp; Proyectos</button>
+      </div>
+      <div id="colabTabDatos">
+        <div class="fgrid">
+          <div class="fg"><label>Legajo *</label><input id="fLegajoC" placeholder="EJ-0042"></div>
+          <div class="fg"><label>Nombre completo *</label><input id="fNombreC" placeholder="Nombre Apellido"></div>
+          <div class="fg"><label>Cargo</label><input id="fCargoC" placeholder="Cloud Engineer"></div>
+          <div class="fg"><label>Área</label>
+            <select id="fAreaC"><option>Data & Analytics</option><option>Cloud Infrastructure</option><option>DevOps</option><option>Seguridad</option><option>Desarrollo</option><option>Consultoría</option></select>
+          </div>
+          <div class="fg"><label>Seniority</label>
+            <select id="fSenC"><option>Junior</option><option>Semi Senior</option><option>Senior</option><option>Lead</option></select>
+          </div>
+          <div class="fg"><label>Fecha Ingreso</label><input id="fIngresoC" type="date"></div>
+          <div class="fg"><label>Email corporativo</label><input id="fEmailC" type="email" placeholder="nombre@empresa.com"></div>
+          <div class="fg"><label>Cliente Asignado</label><input id="fClienteC" placeholder="Nombre del cliente"></div>
+          <div class="fg full"><label>Stack Tecnológico</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;" id="stackSelector"></div>
+            <div class="hint">Selecciona los proveedores del colaborador</div>
+          </div>
+        </div>
+      </div>
+      <div id="colabTabRel" style="display:none">
+        <!-- Evaluador P&G -->
+        <div style="margin-bottom:20px">
+          <div style="font-family:'Aptos','Arial',sans-serif;font-weight:700;font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+            📊 Evaluador en Performance &amp; Growth
+            <span id="evalCurrentBadge" class="tag t-admin" style="font-size:10px;font-weight:600"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:12px">
+            <div class="fg"><label>Evaluador</label><select id="fNuevoEval"></select></div>
+            <div class="fg"><label>Desde</label><input id="fEvalDesde" type="date"></div>
+            <div class="fg"><label>Notas</label><input id="fEvalNotas" placeholder="Opcional"></div>
+            <div><button class="btn btn-admin btn-sm" style="margin-top:18px" onclick="asignarEvaluador()">Asignar</button></div>
+          </div>
+          <div id="evalHistoryList"></div>
+        </div>
+        <div class="divider"></div>
+        <!-- Líder de Proyecto -->
+        <div style="margin-top:16px">
+          <div style="font-family:'Aptos','Arial',sans-serif;font-weight:700;font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+            🏗 Líder de Proyecto
+            <span id="liderCurrentBadge" class="tag t-process" style="font-size:10px;font-weight:600"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:12px">
+            <div class="fg"><label>Líder</label><select id="fNuevoLider"></select></div>
+            <div class="fg"><label>Proyecto</label><input id="fLiderProyecto" placeholder="Nombre del proyecto"></div>
+            <div class="fg"><label>Desde</label><input id="fLiderDesde" type="date"></div>
+            <div><button class="btn btn-primary btn-sm" style="margin-top:18px" onclick="asignarLider()">Asignar</button></div>
+          </div>
+          <div id="liderHistoryList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-outline" onclick="closeMod('colabOverlay')">Cerrar</button>
+      <button class="btn btn-admin" id="colabSaveBtn" onclick="saveColab()">Guardar Colaborador</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: PRESUPUESTO CONFIG ═══ -->
+<div class="overlay" id="budgetOverlay" onclick="closeOverlay('budgetOverlay',event)">
+  <div class="modal" style="width:800px;">
+    <div class="mhdr"><h2>Presupuesto Anual</h2><button class="mclose" onclick="closeMod('budgetOverlay')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid" style="grid-template-columns:1fr;">
+        <div class="fg"><label>Presupuesto Total (USD)</label><input id="fBudgetTotal" type="number" min="0" placeholder="50000"></div>
+        <div class="fg"><label>Año</label><input id="fBudgetYear" type="number" value="2025"></div>
+        <div class="fg"><label>Alerta al alcanzar (%)</label><input id="fBudgetAlert" type="number" value="80" min="1" max="100"></div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-outline" onclick="closeMod('budgetOverlay')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveBudget()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ═══════════════════════════ SCRIPT ═══════════════════════════ -->
+<script>
+/* ══════════════════════════════════════════
+   MASTER DATA — CERTIFICACIONES CLOUD
+══════════════════════════════════════════ */
+let VENDORS = [
+  {id:'gcp',   name:'Google Cloud',  logo:'☁️',  color:'var(--gcp)',  cls:'v-gcp'},
+  {id:'azure', name:'Microsoft Azure',logo:'🔷', color:'var(--azure)',cls:'v-azure'},
+  {id:'aws',   name:'AWS',           logo:'🟠',  color:'var(--aws)',  cls:'v-aws'},
+  {id:'databricks',name:'Databricks',logo:'🔶',  color:'var(--db)',   cls:'v-databricks'},
+  {id:'google',name:'Google (Workspace/Data)', logo:'🔵', color:'var(--ggl)', cls:'v-google'},
+  {id:'hashicorp',name:'HashiCorp',  logo:'💜',  color:'var(--hc)',   cls:'v-hashicorp'},
+  {id:'otro',  name:'Otro',          logo:'🏅',  color:'var(--ink2)',cls:'v-otro'},
+];
+
+let MASTER_CERTS = [
+  {id:'gc1',name:'Associate Cloud Engineer',vendor:'gcp',nivel:'Associate',vigencia:24},
+  {id:'gc2',name:'Professional Data Engineer',vendor:'gcp',nivel:'Professional',vigencia:24},
+  {id:'gc3',name:'Professional Cloud Architect',vendor:'gcp',nivel:'Professional',vigencia:24},
+  {id:'gc4',name:'Professional ML Engineer',vendor:'gcp',nivel:'Professional',vigencia:24},
+  {id:'az1',name:'AZ-900 Azure Fundamentals',vendor:'azure',nivel:'Fundamentals',vigencia:0},
+  {id:'az2',name:'AZ-104 Azure Administrator',vendor:'azure',nivel:'Associate',vigencia:24},
+  {id:'az3',name:'AZ-204 Azure Developer',vendor:'azure',nivel:'Associate',vigencia:24},
+  {id:'az4',name:'DP-203 Azure Data Engineer',vendor:'azure',nivel:'Associate',vigencia:24},
+  {id:'az5',name:'AZ-305 Azure Solutions Architect',vendor:'azure',nivel:'Expert',vigencia:24},
+  {id:'aw1',name:'AWS Cloud Practitioner',vendor:'aws',nivel:'Foundational',vigencia:36},
+  {id:'aw2',name:'AWS Solutions Architect Associate',vendor:'aws',nivel:'Associate',vigencia:36},
+  {id:'aw3',name:'AWS Data Engineer Associate',vendor:'aws',nivel:'Associate',vigencia:36},
+  {id:'aw4',name:'AWS Solutions Architect Professional',vendor:'aws',nivel:'Professional',vigencia:36},
+  {id:'aw5',name:'AWS Machine Learning Specialty',vendor:'aws',nivel:'Specialty',vigencia:36},
+  {id:'db1',name:'Databricks Lakehouse Fundamentals',vendor:'databricks',nivel:'Fundamentals',vigencia:0},
+  {id:'db2',name:'Databricks Certified Data Engineer Associate',vendor:'databricks',nivel:'Associate',vigencia:24},
+  {id:'db3',name:'Databricks Certified Data Engineer Professional',vendor:'databricks',nivel:'Professional',vigencia:24},
+  {id:'db4',name:'Databricks ML Professional',vendor:'databricks',nivel:'Professional',vigencia:24},
+  {id:'hc1',name:'Terraform Associate',vendor:'hashicorp',nivel:'Associate',vigencia:24},
+  {id:'hc2',name:'Vault Associate',vendor:'hashicorp',nivel:'Associate',vigencia:24},
+];
+
+let MASTER_ENTITIES = [
+  {id:'e1',name:'Google Cloud Certification',vendor:'gcp',url:'cloud.google.com/certification'},
+  {id:'e2',name:'Microsoft Learn Certifications',vendor:'azure',url:'learn.microsoft.com'},
+  {id:'e3',name:'AWS Training & Certification',vendor:'aws',url:'aws.amazon.com/certification'},
+  {id:'e4',name:'Databricks Academy',vendor:'databricks',url:'academy.databricks.com'},
+  {id:'e5',name:'HashiCorp Certifications',vendor:'hashicorp',url:'developer.hashicorp.com/certifications'},
+  {id:'e6',name:'Coursera (partner)',vendor:'google',url:'coursera.org'},
+];
+
+let COLABORADORES = [
+  {id:'c1',legajo:'EJ-0001',nombre:'Lucas Méndez',cargo:'Cloud Engineer',area:'Cloud Infrastructure',seniority:'Senior',ingreso:'2021-03-15',email:'l.mendez@empresa.com',cliente:'FinTech SA',stack:['gcp','azure','hashicorp'],
+   evaluadoresHistory:[{evaluadorId:'c5',evaluadorNombre:'Matías Torres',desde:'2021-03-15',hasta:null,notas:'Asignado desde el ingreso'}],
+   lideresHistory:[{liderId:'c3',liderNombre:'Rodrigo Paz',proyecto:'FinTech SA',desde:'2021-03-15',hasta:null}]},
+  {id:'c2',legajo:'EJ-0042',nombre:'Valentina Cruz',cargo:'Data Engineer',area:'Data & Analytics',seniority:'Semi Senior',ingreso:'2022-07-01',email:'v.cruz@empresa.com',cliente:'Retail Corp',stack:['databricks','aws','gcp'],
+   evaluadoresHistory:[
+     {evaluadorId:'c1',evaluadorNombre:'Lucas Méndez',desde:'2022-07-01',hasta:'2023-06-30',notas:'Primer evaluador asignado'},
+     {evaluadorId:'c5',evaluadorNombre:'Matías Torres',desde:'2023-07-01',hasta:null,notas:''}
+   ],
+   lideresHistory:[{liderId:'c1',liderNombre:'Lucas Méndez',proyecto:'Retail Corp',desde:'2022-07-01',hasta:null}]},
+  {id:'c3',legajo:'EJ-0078',nombre:'Rodrigo Paz',cargo:'DevOps Lead',area:'DevOps',seniority:'Lead',ingreso:'2020-01-10',email:'r.paz@empresa.com',cliente:'TelcoGroup',stack:['aws','hashicorp','azure'],
+   evaluadoresHistory:[{evaluadorId:'c5',evaluadorNombre:'Matías Torres',desde:'2020-01-10',hasta:null,notas:''}],
+   lideresHistory:[{liderId:'c5',liderNombre:'Matías Torres',proyecto:'TelcoGroup',desde:'2020-01-10',hasta:null}]},
+  {id:'c4',legajo:'EJ-0099',nombre:'Sofía Romero',cargo:'ML Engineer',area:'Data & Analytics',seniority:'Senior',ingreso:'2022-11-05',email:'s.romero@empresa.com',cliente:'InsureTech',stack:['gcp','databricks'],
+   evaluadoresHistory:[{evaluadorId:'c3',evaluadorNombre:'Rodrigo Paz',desde:'2022-11-05',hasta:null,notas:''}],
+   lideresHistory:[
+     {liderId:'c1',liderNombre:'Lucas Méndez',proyecto:'Proyecto Alpha',desde:'2022-11-05',hasta:'2024-01-31'},
+     {liderId:'c2',liderNombre:'Valentina Cruz',proyecto:'InsureTech Data',desde:'2024-02-01',hasta:null}
+   ]},
+  {id:'c5',legajo:'EJ-0115',nombre:'Matías Torres',cargo:'Cloud Architect',area:'Cloud Infrastructure',seniority:'Lead',ingreso:'2019-08-20',email:'m.torres@empresa.com',cliente:'Banco XYZ',stack:['azure','aws'],
+   evaluadoresHistory:[{evaluadorId:'c3',evaluadorNombre:'Rodrigo Paz',desde:'2019-08-20',hasta:null,notas:'Peer evaluation'}],
+   lideresHistory:[{liderId:'c3',liderNombre:'Rodrigo Paz',proyecto:'Banco XYZ',desde:'2019-08-20',hasta:null}]},
+];
+
+function dd(n){const r=new Date();r.setDate(r.getDate()+n);return r.toISOString().split('T')[0];}
+
+let CERTS = [
+  {id:1,colabId:'c1',legajo:'EJ-0001',colaborador:'Lucas Méndez',certificacion:'Professional Cloud Architect',certMasterId:'gc3',proveedor:'gcp',nivel:'Professional',entidad:'Google Cloud Certification',fechaEmision:dd(-500),fechaVencimiento:dd(220),numCert:'GCP-PA-2022-7821',costo:200,notas:'',docUrl:''},
+  {id:2,colabId:'c1',legajo:'EJ-0001',colaborador:'Lucas Méndez',certificacion:'AZ-104 Azure Administrator',certMasterId:'az2',proveedor:'azure',nivel:'Associate',entidad:'Microsoft Learn Certifications',fechaEmision:dd(-300),fechaVencimiento:dd(25),numCert:'AZ-104-MC-3312',costo:165,notas:'Renovar pronto',docUrl:''},
+  {id:3,colabId:'c1',legajo:'EJ-0001',colaborador:'Lucas Méndez',certificacion:'Terraform Associate',certMasterId:'hc1',proveedor:'hashicorp',nivel:'Associate',entidad:'HashiCorp Certifications',fechaEmision:dd(-180),fechaVencimiento:dd(-10),numCert:'',costo:70,notas:'VENCIDA',docUrl:''},
+  {id:4,colabId:'c2',legajo:'EJ-0042',colaborador:'Valentina Cruz',certificacion:'Databricks Certified Data Engineer Associate',certMasterId:'db2',proveedor:'databricks',nivel:'Associate',entidad:'Databricks Academy',fechaEmision:dd(-200),fechaVencimiento:dd(190),numCert:'DB-DEA-4401',costo:200,notas:'',docUrl:''},
+  {id:5,colabId:'c2',legajo:'EJ-0042',colaborador:'Valentina Cruz',certificacion:'AWS Data Engineer Associate',certMasterId:'aw3',proveedor:'aws',nivel:'Associate',entidad:'AWS Training & Certification',fechaEmision:dd(-400),fechaVencimiento:dd(12),numCert:'AWS-DEA-9901',costo:300,notas:'',docUrl:''},
+  {id:6,colabId:'c2',legajo:'EJ-0042',colaborador:'Valentina Cruz',certificacion:'Associate Cloud Engineer',certMasterId:'gc1',proveedor:'gcp',nivel:'Associate',entidad:'Google Cloud Certification',fechaEmision:dd(-600),fechaVencimiento:dd(-35),numCert:'GCP-ACE-1192',costo:200,notas:'',docUrl:''},
+  {id:7,colabId:'c3',legajo:'EJ-0078',colaborador:'Rodrigo Paz',certificacion:'AWS Solutions Architect Professional',certMasterId:'aw4',proveedor:'aws',nivel:'Professional',entidad:'AWS Training & Certification',fechaEmision:dd(-100),fechaVencimiento:dd(980),numCert:'AWS-SAP-5532',costo:300,notas:'',docUrl:''},
+  {id:8,colabId:'c3',legajo:'EJ-0078',colaborador:'Rodrigo Paz',certificacion:'Terraform Associate',certMasterId:'hc1',proveedor:'hashicorp',nivel:'Associate',entidad:'HashiCorp Certifications',fechaEmision:dd(-50),fechaVencimiento:dd(680),numCert:'HC-TA-8821',costo:70,notas:'',docUrl:''},
+  {id:9,colabId:'c4',legajo:'EJ-0099',colaborador:'Sofía Romero',certificacion:'Professional ML Engineer',certMasterId:'gc4',proveedor:'gcp',nivel:'Professional',entidad:'Google Cloud Certification',fechaEmision:dd(-250),fechaVencimiento:dd(470),numCert:'GCP-MLE-3310',costo:200,notas:'',docUrl:''},
+  {id:10,colabId:'c4',legajo:'EJ-0099',colaborador:'Sofía Romero',certificacion:'Databricks ML Professional',certMasterId:'db4',proveedor:'databricks',nivel:'Professional',entidad:'Databricks Academy',fechaEmision:dd(-120),fechaVencimiento:dd(16),numCert:'DB-MLP-7721',costo:200,notas:'',docUrl:''},
+  {id:11,colabId:'c5',legajo:'EJ-0115',colaborador:'Matías Torres',certificacion:'AZ-305 Azure Solutions Architect',certMasterId:'az5',proveedor:'azure',nivel:'Expert',entidad:'Microsoft Learn Certifications',fechaEmision:dd(-90),fechaVencimiento:dd(640),numCert:'AZ305-EX-1001',costo:165,notas:'',docUrl:''},
+];
+
+let ROADMAP = [
+  {id:1,colabId:'c1',legajo:'EJ-0001',colaborador:'Lucas Méndez',certMasterId:'aw2',certificacion:'AWS Solutions Architect Associate',proveedor:'aws',nivel:'Associate',status:'En Progreso',prioridad:'Alta',fechaInicio:dd(-30),fechaTarget:dd(60),progreso:65,costoEstimado:300,notas:'Estudiando con A Cloud Guru'},
+  {id:2,colabId:'c2',legajo:'EJ-0042',colaborador:'Valentina Cruz',certMasterId:'db3',certificacion:'Databricks Data Engineer Professional',proveedor:'databricks',nivel:'Professional',status:'Planificado',prioridad:'Media',fechaInicio:dd(30),fechaTarget:dd(120),progreso:0,costoEstimado:200,notas:''},
+  {id:3,colabId:'c4',legajo:'EJ-0099',colaborador:'Sofía Romero',certMasterId:'az4',certificacion:'DP-203 Azure Data Engineer',proveedor:'azure',nivel:'Associate',status:'Planificado',prioridad:'Alta',fechaInicio:dd(15),fechaTarget:dd(90),progreso:0,costoEstimado:165,notas:'Cliente lo requiere'},
+  {id:4,colabId:'c3',legajo:'EJ-0078',colaborador:'Rodrigo Paz',certMasterId:'gc3',certificacion:'Professional Cloud Architect',proveedor:'gcp',nivel:'Professional',status:'Completado',prioridad:'Alta',fechaInicio:dd(-200),fechaTarget:dd(-100),progreso:100,costoEstimado:200,notas:'Aprobado en primer intento'},
+];
+
+let BUDGET_CFG = {total:50000, year:2025, alertPct:80};
+let nextCertId=12, nextColabId=6, nextRmId=5;
+let pendingFiles=[];
+let editingCertId=null, editingColabId=null, editingRmId=null;
+let rmFilter='all';
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let CFG = {
+  mode:'demo', url:'', list:'', colabs:'', mcerts:'', entities:'', roadmap:'',
+  adminGroup:'CertTrack_Admins', user:null, role:'employee'
+};
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function days(s){return Math.ceil((new Date(s)-new Date())/864e5);}
+function calcSt(c){const d=days(c.fechaVencimiento);return d<0?'Vencida':d<=30?'Por Vencer':'Vigente';}
+function tagCls(s){return{Vigente:'t-active','Por Vencer':'t-warn',Vencida:'t-danger','En Proceso':'t-process'}[s]||'t-neutral';}
+function ccCls(s){return{Vigente:'cc-ok','Por Vencer':'cc-warn',Vencida:'cc-exp','En Proceso':'cc-proc'}[s]||'';}
+function fd(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
+function dlbl(n){if(n<0)return`Vencida hace ${-n}d`;if(n===0)return'Vence hoy';return`+${n}d`;}
+function dcol(n){return n<0?'var(--danger)':n<=30?'var(--warn)':'var(--success)';}
+function vend(id){return VENDORS.find(v=>v.id===id)||VENDORS.find(v=>v.id==='otro');}
+function vendBadge(id){const v=vend(id);return`<span class="vendor ${v.cls}">${v.logo} ${v.name}</span>`;}
+function fmtUSD(n){return'$'+Number(n||0).toLocaleString('en-US');}
+function myData(){return CERTS.filter(c=>c.colabId===CFG.user?.id);}
+function vis(){return CFG.role==='admin'?CERTS:myData();}
+function myColab(){return COLABORADORES.find(c=>c.id===CFG.user?.id);}
+function initials(n){return n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();}
+
+/* ══════════════════════════════════════════
+   SHAREPOINT ADAPTER (stub — same pattern as before)
+══════════════════════════════════════════ */
+async function connectSP(){
+  const mode=document.getElementById('cfgMode').value;
+  CFG.mode=mode;
+  if(mode==='demo'){applyDemoRole();return;}
+  // Real SP connection would go here (same pattern as previous version)
+  toast('Modo SP real requiere entorno SharePoint','warn');
+}
+
+function onModeChange(){
+  const demo=document.getElementById('cfgMode').value==='demo';
+  document.getElementById('demoRoleWrap').style.display=demo?'flex':'none';
+}
+
+function applyDemoRole(){
+  const sel=document.getElementById('demoRole').value;
+  const map={
+    emp1:{id:'c1',role:'employee'},emp2:{id:'c2',role:'employee'},
+    emp3:{id:'c3',role:'employee'},admin:{id:'admin',role:'admin'}
+  };
+  const m=map[sel]||map.emp1;
+  CFG.role=m.role;
+  if(m.role==='admin'){
+    CFG.user={id:'admin',nombre:'Admin RRHH',legajo:'ADM-001',initials:'AR',cargo:'Administrador'};
+  }else{
+    const c=COLABORADORES.find(x=>x.id===m.id);
+    CFG.user={id:c.id,nombre:c.nombre,legajo:c.legajo,initials:initials(c.nombre),cargo:c.cargo};
+  }
+  applyRole();
+}
+
+function applyRole(){
+  const isAdmin=CFG.role==='admin';
+  // Update header
+  document.getElementById('uav').textContent=CFG.user.initials;
+  document.getElementById('uav').className='uav '+(isAdmin?'admin-av':'');
+  document.getElementById('uName').textContent=CFG.user.nombre;
+  const rp=document.getElementById('rolePill');
+  rp.className='role-pill '+(isAdmin?'admin':'employee');
+  rp.textContent=isAdmin?'🛡 Admin RRHH':'👤 Colaborador';
+  // SP bar
+  document.getElementById('spBarTxt').textContent=CFG.mode==='demo'
+    ?`Demo · ${CFG.user.nombre} (${CFG.user.legajo||'—'}) · Rol: ${CFG.role}`
+    :`SharePoint · ${CFG.user.nombre} · ${isAdmin?'Acceso total':'Solo mis registros'}`;
+  // Sidebar admin items
+  ['sbTodas','sbEmpleados','sbSkills','sbBudget','sbReporte','sbMaestros'].forEach(id=>{
+    document.getElementById(id).style.display=isAdmin?'flex':'none';
+  });
+  // Home
+  document.getElementById('adminHomeSection').style.display=isAdmin?'block':'none';
+  document.getElementById('homeRoleLabel').textContent=isAdmin?'· Administrador':'· '+CFG.user.nombre;
+  document.getElementById('homeSub').textContent=isAdmin?'Vista global de todos los colaboradores':`Legajo: ${CFG.user.legajo||'—'}`;
+  document.getElementById('myLegajoBanner').textContent=`Legajo: ${CFG.user.legajo||'—'}`;
+  // Populate vendor filters
+  populateVendorFilters();
+  renderAll();
+  toggleCfg();
+  toast(`Bienvenido, ${CFG.user.nombre}`,'success');
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function goPage(p){
+  if(['todas','empleados','skills','budget','reporte','maestros'].includes(p)&&CFG.role!=='admin'){
+    toast('Solo administradores','warn');return;
+  }
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(x=>x.classList.toggle('active',x.dataset.p===p));
+  const fn={home:renderHome,'mis-certs':renderMisCerts,alertas:renderAlerts,roadmap:renderRoadmap,
+    todas:renderAllTable,empleados:renderEmpleados,skills:renderSkills,budget:renderBudget,
+    reporte:renderReporte,maestros:renderMaestros};
+  if(fn[p])fn[p]();
+}
+function toggleCfg(){const p=document.getElementById('cfgPanel');p.style.display=p.style.display==='none'?'block':'none';}
+function renderAll(){renderHome();renderMisCerts();renderAlerts();}
+
+/* ══════════════════════════════════════════
+   VENDOR FILTERS
+══════════════════════════════════════════ */
+function populateVendorFilters(){
+  ['mcVend','allVend','rptVend'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML='<option value="">Proveedor</option>'+VENDORS.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  });
+  // Vendor selects in modals
+  ['newCertVend','newEntVend2'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML=VENDORS.filter(v=>v.id!=='otro').map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  });
+  // Cert master selects
+  ['fCertMaster','fRmCert'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML='<option value="">— Seleccionar —</option>'+
+      VENDORS.filter(v=>v.id!=='otro').map(v=>`<optgroup label="${v.name}">${
+        MASTER_CERTS.filter(c=>c.vendor===v.id).map(c=>`<option value="${c.id}">${c.name} (${c.nivel})</option>`).join('')
+      }</optgroup>`).join('');
+  });
+  // Entity selects
+  document.getElementById('fEntidad').innerHTML='<option value="">— Seleccionar —</option>'+
+    MASTER_ENTITIES.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  // Area filter
+  ['allArea','empAreaF','rptArea'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML='<option value="">Todas las áreas</option>'+
+      [...new Set(COLABORADORES.map(c=>c.area))].map(a=>`<option>${a}</option>`).join('');
+  });
+  // Colab filters
+  const empF=document.getElementById('allEmpF');
+  if(empF)empF.innerHTML='<option value="">Colaborador</option>'+
+    COLABORADORES.map(c=>`<option value="${c.id}">${c.legajo} — ${c.nombre}</option>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   RENDER: HOME
+══════════════════════════════════════════ */
+function renderHome(){
+  const src=vis().map(c=>({...c,_s:calcSt(c),_d:days(c.fechaVencimiento)}));
+  const ok=src.filter(c=>c._s==='Vigente').length;
+  const warn=src.filter(c=>c._s==='Por Vencer').length;
+  const exp=src.filter(c=>c._s==='Vencida').length;
+  const alerts=warn+exp;
+  const ab=document.getElementById('alertBadge');
+  ab.style.display=alerts>0?'inline-flex':'none';ab.textContent=alerts;
+
+  // Stats
+  const adminExtra=CFG.role==='admin'
+    ?`<div class="stat purple"><div class="stat-lbl">Colaboradores</div><div class="stat-val">${COLABORADORES.length}</div><div class="stat-sub">En el sistema</div></div>`:'';
+  document.getElementById('homeStats').innerHTML=`
+    ${adminExtra}
+    <div class="stat blue"><div class="stat-lbl">Total Certs</div><div class="stat-val">${src.length}</div><div class="stat-sub">${CFG.role==='admin'?'Globales':'Mis certificaciones'}</div></div>
+    <div class="stat green"><div class="stat-lbl">Vigentes</div><div class="stat-val">${ok}</div><div class="stat-sub">Al día</div></div>
+    <div class="stat warn"><div class="stat-lbl">Por Vencer</div><div class="stat-val">${warn}</div><div class="stat-sub">≤30 días</div></div>
+    <div class="stat red"><div class="stat-lbl">Vencidas</div><div class="stat-val">${exp}</div><div class="stat-sub">Requieren acción</div></div>`;
+
+  // Provider bars
+  const provHtml=VENDORS.filter(v=>v.id!=='otro').map(v=>{
+    const tot=src.filter(c=>c.proveedor===v.id).length;
+    const vOk=src.filter(c=>c.proveedor===v.id&&c._s==='Vigente').length;
+    const pct=tot?Math.round(vOk/tot*100):0;
+    if(!tot)return'';
+    return`<div class="skill-bar-wrap">
+      <div class="skill-top"><span style="display:flex;align-items:center;gap:6px">${v.logo} <span class="vendor ${v.cls}">${v.name}</span></span><span style="color:var(--ink2);font-size:11px">${vOk}/${tot} vigentes</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:${pct}%;background:${v.color}"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('homeProv').innerHTML=provHtml||'<p style="color:var(--ink2);font-size:13px">Sin datos</p>';
+
+  // Timeline
+  const tl=[...src].filter(c=>c._d>=-7&&c._d<=90).sort((a,b)=>a._d-b._d).slice(0,6);
+  document.getElementById('homeTl').innerHTML=tl.length
+    ?tl.map(c=>`<div class="tl-item ${c._d<0?'tl-r':c._d<=30?'tl-w':'tl-g'}">
+        <div class="tl-main">${c.certificacion}${CFG.role==='admin'?' <span style="color:var(--ink3);font-weight:400">— '+c.colaborador.split(' ')[0]+'</span>':''}</div>
+        <div class="tl-sub">${fd(c.fechaVencimiento)} · <span style="color:${dcol(c._d)}">${dlbl(c._d)}</span></div>
+      </div>`).join('')
+    :'<p style="font-size:13px;color:var(--ink2)">Sin vencimientos próximos ✅</p>';
+
+  // Admin extras
+  if(CFG.role==='admin'){
+    const allSrc=CERTS.map(c=>({...c,_s:calcSt(c)}));
+    const empAlerts=COLABORADORES.map(e=>{
+      const certs=allSrc.filter(c=>c.colabId===e.id);
+      const a=certs.filter(c=>c._s!=='Vigente').length;
+      return{...e,certs:certs.length,alerts:a};
+    }).filter(e=>e.alerts>0).sort((a,b)=>b.alerts-a.alerts);
+
+    document.getElementById('homeEmpAlerts').innerHTML=empAlerts.length
+      ?empAlerts.map(e=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--danger-s);color:var(--danger);display:flex;align-items:center;justify-content:center;font-family:'Aptos','Arial',sans-serif;font-weight:800;font-size:11px">${initials(e.nombre)}</div>
+          <div style="flex:1"><div style="font-weight:600;font-size:13px">${e.nombre} <span style="font-size:11px;color:var(--ink3)">${e.legajo}</span></div><div style="font-size:11px;color:var(--ink2)">${e.area} · ${e.seniority}</div></div>
+          <span class="tag t-danger">${e.alerts} alerta${e.alerts>1?'s':''}</span>
+        </div>`).join('')
+      :'<p style="font-size:13px;color:var(--ink2);padding:8px 0">Sin alertas en colaboradores ✅</p>';
+
+    // Skill pie simple
+    const vendCounts=VENDORS.filter(v=>v.id!=='otro').map(v=>({v,n:allSrc.filter(c=>c.proveedor===v.id).length})).filter(x=>x.n>0);
+    const total=vendCounts.reduce((a,b)=>a+b.n,0)||1;
+    document.getElementById('homeSkillPie').innerHTML=vendCounts.map(({v,n})=>`
+      <div class="skill-bar-wrap">
+        <div class="skill-top"><span>${v.logo} ${v.name}</span><span style="font-weight:700;color:${v.color}">${n} (${Math.round(n/total*100)}%)</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:${Math.round(n/total*100)}%;background:${v.color}"></div></div>
+      </div>`).join('');
+  }
+}
+
+/* ══════════════════════════════════════════
+   CERT CARD
+══════════════════════════════════════════ */
+function makeCertCard(c){
+  const s=c._s||calcSt(c);const d=c._d!==undefined?c._d:days(c.fechaVencimiento);
+  const v=vend(c.proveedor);
+  const canEdit=CFG.role==='admin'||c.colabId===CFG.user?.id;
+  return`<div class="ccard ${ccCls(s)}" onclick="${canEdit?`editCert(${c.id})`:'void(0)'}">
+    <div class="rbn"></div>
+    <div class="ccard-top">
+      <div><div class="ccard-name">${c.certificacion}</div><div class="ccard-entity">${c.entidad}</div></div>
+      <span class="tag ${tagCls(s)}">${s}</span>
+    </div>
+    <div style="margin-bottom:10px">${vendBadge(c.proveedor)} <span class="tag t-neutral" style="font-size:10px">${c.nivel}</span></div>
+    ${CFG.role==='admin'?`<div class="crow"><span>Colaborador</span><span>${c.colaborador} <span style="color:var(--ink3)">${c.legajo}</span></span></div>`:''}
+    <div class="ccard-meta">
+      <div class="crow"><span>Vencimiento</span><span>${fd(c.fechaVencimiento)}</span></div>
+      <div class="crow"><span>Tiempo</span><span style="color:${dcol(d)}">${dlbl(d)}</span></div>
+      ${c.numCert?`<div class="crow"><span>Certificado</span><span style="font-size:11px">${c.numCert}</span></div>`:''}
+      ${c.costo?`<div class="crow"><span>Costo</span><span>${fmtUSD(c.costo)}</span></div>`:''}
+    </div>
+    <div class="ccard-foot">
+      ${c.docUrl?`<a href="${c.docUrl}" target="_blank" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">📄 Badge</a>`:'<span></span>'}
+      ${canEdit?`<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();editCert(${c.id})">✏ Editar</button>`:''}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   RENDER: MIS CERTS
+══════════════════════════════════════════ */
+function renderMisCerts(){
+  const q=(document.getElementById('mcQ')?.value||'').toLowerCase();
+  const st=document.getElementById('mcSt')?.value||'';
+  const vd=document.getElementById('mcVend')?.value||'';
+  const rows=myData().map(c=>({...c,_s:calcSt(c),_d:days(c.fechaVencimiento)}))
+    .filter(c=>(!q||c.certificacion.toLowerCase().includes(q)||c.entidad.toLowerCase().includes(q))&&(!st||c._s===st)&&(!vd||c.proveedor===vd))
+    .sort((a,b)=>a._d-b._d);
+  document.getElementById('misCertsGrid').innerHTML=rows.length?rows.map(makeCertCard).join('')
+    :`<div class="empty"><div class="empty-icon">🏅</div><h3>Sin certificaciones</h3><p>Agrega tu primera cert</p></div>`;
+}
+
+/* ══════════════════════════════════════════
+   RENDER: ALERTAS
+══════════════════════════════════════════ */
+function renderAlerts(){
+  const src=vis().map(c=>({...c,_s:calcSt(c),_d:days(c.fechaVencimiento)}))
+    .filter(c=>c._s==='Vencida'||c._s==='Por Vencer').sort((a,b)=>a._d-b._d);
+  document.getElementById('alertsSub').textContent=CFG.role==='admin'
+    ?`${src.length} certificaciones de ${new Set(src.map(c=>c.colabId)).size} colaboradores requieren atención`
+    :`${src.length} de tus certificaciones requieren atención`;
+  document.getElementById('alertsList').innerHTML=src.length
+    ?src.map(c=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--s1);border:1px solid var(--border);border-left:4px solid ${c._d<0?'var(--danger)':'var(--warn)'};border-radius:var(--r);margin-bottom:9px;transition:all .15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderLeftColor='${c._d<0?'var(--danger)':'var(--warn)'}'">
+        <span style="font-size:22px">${c._d<0?'🔴':c._d<=7?'🟠':'🟡'}</span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${c.certificacion}</div>
+          <div style="font-size:12px;color:var(--ink2);margin-top:2px">${vendBadge(c.proveedor)} · ${c.entidad}${CFG.role==='admin'?' · '+c.colaborador+' ('+c.legajo+')':''}</div>
+        </div>
+        <span class="tag ${tagCls(c._s)}">${dlbl(c._d)}</span>
+        ${(CFG.role==='admin'||c.colabId===CFG.user?.id)?`<button class="btn btn-warn btn-sm" onclick="editCert(${c.id})">Renovar</button>`:''}
+      </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">✅</div><h3>Todo en orden</h3><p>Sin alertas activas</p></div>`;
+}
+
+/* ══════════════════════════════════════════
+   RENDER: ROADMAP
+══════════════════════════════════════════ */
+function setRmFilter(f,btn){
+  rmFilter=f;
+  document.querySelectorAll('.itab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderRoadmap();
+}
+function renderRoadmap(){
+  const src=(CFG.role==='admin'?ROADMAP:ROADMAP.filter(r=>r.colabId===CFG.user?.id))
+    .filter(r=>rmFilter==='all'||r.status===rmFilter);
+  const stCls={Planificado:'rm-planned','En Progreso':'rm-progress',Completado:'rm-done'};
+  const pCols={Alta:'var(--danger)',Media:'var(--warn)',Baja:'var(--ink3)'};
+  document.getElementById('roadmapGrid').innerHTML=src.length?src.map(r=>{
+    const v=vend(r.proveedor);
+    return`<div class="roadmap-card">
+      <span class="rm-status ${stCls[r.status]||'rm-planned'}">${r.status}</span>
+      <div style="font-size:9px;color:${pCols[r.prioridad]||'var(--ink3)'};font-weight:700;margin-bottom:6px">▲ ${r.prioridad}</div>
+      <div class="rm-name">${r.certificacion}</div>
+      <div class="rm-entity">${vendBadge(r.proveedor)} · ${r.nivel}</div>
+      ${CFG.role==='admin'?`<div style="font-size:11px;color:var(--ink2);margin-bottom:6px">${r.colaborador} <span style="color:var(--ink3)">${r.legajo}</span></div>`:''}
+      <div class="rm-bar"><div class="rm-fill" style="width:${r.progreso}%;background:${v.color}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:10px;color:var(--ink2)">${r.progreso}%</span>
+        <span style="font-size:10px;color:var(--ink2)">${fmtUSD(r.costoEstimado)}</span>
+      </div>
+      <div class="rm-dates">Objetivo: ${fd(r.fechaTarget)}</div>
+      ${r.notas?`<div style="font-size:11px;color:var(--ink3);margin-top:6px">${r.notas}</div>`:''}
+      <div style="display:flex;gap:5px;margin-top:10px;">
+        <button class="btn btn-ghost btn-xs" onclick="editRm(${r.id})">✏</button>
+        <button class="btn btn-danger btn-xs" onclick="delRm(${r.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('')
+  :`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🗺</div><h3>Sin planes</h3><p>Agrega certificaciones al roadmap</p></div>`;
+}
+
+/* ══════════════════════════════════════════
+   RENDER: ALL TABLE (ADMIN)
+══════════════════════════════════════════ */
+let sF='fechaVencimiento',sA=true,pg=1;const PG=12;
+function sortTbl(f){if(sF===f)sA=!sA;else{sF=f;sA=true;}renderAllTable();}
+function renderAllTable(){
+  if(CFG.role!=='admin')return;
+  const q=(document.getElementById('allQ')?.value||'').toLowerCase();
+  const st=document.getElementById('allSt')?.value||'';
+  const vd=document.getElementById('allVend')?.value||'';
+  const ef=document.getElementById('allEmpF')?.value||'';
+  const af=document.getElementById('allArea')?.value||'';
+  let rows=CERTS.map(c=>({...c,_s:calcSt(c),_d:days(c.fechaVencimiento)}))
+    .filter(c=>(!q||c.colaborador.toLowerCase().includes(q)||c.certificacion.toLowerCase().includes(q)||c.legajo.toLowerCase().includes(q))&&(!st||c._s===st)&&(!vd||c.proveedor===vd)&&(!ef||c.colabId===ef));
+  if(af){const ids=COLABORADORES.filter(x=>x.area===af).map(x=>x.id);rows=rows.filter(c=>ids.includes(c.colabId));}
+  rows.sort((a,b)=>{let va=a[sF]??'',vb=b[sF]??'';if(sF==='_d'){va=a._d;vb=b._d;}if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();}return sA?(va>vb?1:-1):(va<vb?1:-1);});
+  const pages=Math.max(1,Math.ceil(rows.length/PG));if(pg>pages)pg=1;
+  const sl=rows.slice((pg-1)*PG,pg*PG);
+  document.getElementById('allTbody').innerHTML=sl.map(c=>`<tr onclick="editCert(${c.id})">
+    <td><span style="font-family:'Aptos','Arial',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">${c.legajo}</span></td>
+    <td><div class="td-main">${c.colaborador}</div><div class="td-sub">${COLABORADORES.find(x=>x.id===c.colabId)?.area||''}</div></td>
+    <td><div class="td-main">${c.certificacion}</div></td>
+    <td>${vendBadge(c.proveedor)}</td>
+    <td><span class="tag t-neutral" style="font-size:10px">${c.nivel}</span></td>
+    <td>${fd(c.fechaVencimiento)}</td>
+    <td style="color:${dcol(c._d)};font-weight:700">${dlbl(c._d)}</td>
+    <td><span class="tag ${tagCls(c._s)}">${c._s}</span></td>
+    <td style="font-size:12px">${fmtUSD(c.costo)}</td>
+    <td onclick="event.stopPropagation()">
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="editCert(${c.id})">✏</button>
+      <button class="btn btn-danger btn-icon btn-sm" onclick="delCert(${c.id})">🗑</button>
+    </td>
+  </tr>`).join('')||'<tr><td colspan="10" style="text-align:center;padding:28px;color:var(--ink2)">Sin resultados</td></tr>';
+  document.getElementById('allPager').innerHTML=`<span>${rows.length} registros</span>
+    <button class="btn btn-outline btn-sm" onclick="pg=Math.max(1,pg-1);renderAllTable()" ${pg===1?'disabled':''}>‹</button>
+    <span>Pág ${pg}/${pages}</span>
+    <button class="btn btn-outline btn-sm" onclick="pg=Math.min(${pages},pg+1);renderAllTable()" ${pg===pages?'disabled':''}>›</button>`;
+}
+
+/* ══════════════════════════════════════════
+   RENDER: COLABORADORES (ADMIN)
+══════════════════════════════════════════ */
+let empSF='nombre',empSA=true;
+function sortEmp(f){if(empSF===f)empSA=!empSA;else{empSF=f;empSA=true;}renderEmpleados();}
+function renderEmpleados(){
+  if(CFG.role!=='admin')return;
+  const q=(document.getElementById('empQ')?.value||'').toLowerCase();
+  const af=document.getElementById('empAreaF')?.value||'';
+  const sf=document.getElementById('empSenF')?.value||'';
+  const allC=CERTS.map(c=>({...c,_s:calcSt(c)}));
+  let rows=COLABORADORES.filter(e=>
+    (!q||e.nombre.toLowerCase().includes(q)||e.legajo.toLowerCase().includes(q))&&
+    (!af||e.area===af)&&(!sf||e.seniority===sf));
+  rows.sort((a,b)=>{const va=String(a[empSF]||'').toLowerCase(),vb=String(b[empSF]||'').toLowerCase();return empSA?(va>vb?1:-1):(va<vb?1:-1);});
+  const vendColors=['var(--gcp)','var(--azure)','var(--aws)','var(--db)','var(--hc)'];
+  document.getElementById('empTbody').innerHTML=rows.map(e=>{
+    const certs=allC.filter(c=>c.colabId===e.id);
+    const ok=certs.filter(c=>c._s==='Vigente').length;
+    const al=certs.filter(c=>c._s!=='Vigente').length;
+    const curEval=getCurrentEvaluador(e); const curLider=getCurrentLider(e);
+    return`<tr onclick="">
+      <td><span style="font-family:'Aptos','Arial',sans-serif;font-weight:800;font-size:12px;color:var(--accent)">${e.legajo}</span></td>
+      <td><div class="td-main">${e.nombre}</div><div class="td-sub">${e.email}</div></td>
+      <td><div class="td-main">${e.area}</div><div class="td-sub">${e.cargo}</div></td>
+      <td><span class="tag t-neutral">${e.seniority}</span></td>
+      <td>${curEval?`<div style="font-size:12px;font-weight:600">${curEval.evaluadorNombre}</div><div style="font-size:10px;color:var(--ink2)">${fd(curEval.desde)} →</div>`:'<span style="color:var(--ink3);font-size:11px">—</span>'}</td>
+      <td>${curLider?`<div style="font-size:12px;font-weight:600">${curLider.liderNombre}</div><div style="font-size:10px;color:var(--ink2)">${curLider.proyecto||''}</div>`:'<span style="color:var(--ink3);font-size:11px">—</span>'}</td>
+      <td>${(e.stack||[]).map((s,i)=>{const v=vend(s);return`<span title="${v.name}" style="font-size:16px">${v.logo}</span>`;}).join(' ')}</td>
+      <td><span class="tag t-active">${ok} vigentes</span></td>
+      <td>${al>0?`<span class="tag t-danger">${al} alertas</span>`:'<span class="tag t-neutral">Sin alertas</span>'}</td>
+      <td style="font-size:12px;color:var(--ink2)">${fd(e.ingreso)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="editColab('${e.id}')">✏</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--ink2)">Sin resultados</td></tr>';
+}
+
+/* ══════════════════════════════════════════
+   RENDER: SKILLS CLOUD (ADMIN)
+══════════════════════════════════════════ */
+function renderSkills(){
+  if(CFG.role!=='admin')return;
+  const allC=CERTS.map(c=>({...c,_s:calcSt(c)}));
+  const vendGrid=VENDORS.filter(v=>v.id!=='otro').map(v=>{
+    const certs=allC.filter(c=>c.proveedor===v.id);
+    const ok=certs.filter(c=>c._s==='Vigente').length;
+    const ppl=new Set(certs.map(c=>c.colabId)).size;
+    const pct=certs.length?Math.round(ok/certs.length*100):0;
+    return`<div class="vendor-card" onclick="">
+      <div class="vc-logo">${v.logo}</div>
+      <div class="vc-name" style="color:${v.color}">${v.name}</div>
+      <div class="vc-count">${certs.length} certs · ${ppl} colaboradores</div>
+      <div class="vc-bar"><div class="vc-fill" style="width:${pct}%;background:${v.color}"></div></div>
+      <div style="font-size:10px;color:var(--ink3);margin-top:4px">${pct}% vigentes</div>
+    </div>`;
+  }).join('');
+  document.getElementById('skillsVendorGrid').innerHTML=vendGrid;
+
+  // By level
+  const levels=['Fundamentals','Associate','Professional','Expert','Specialty'];
+  document.getElementById('skillsByLevel').innerHTML=levels.map(l=>{
+    const n=allC.filter(c=>c.nivel===l).length;
+    const pct=allC.length?Math.round(n/allC.length*100):0;
+    return`<div class="skill-bar-wrap">
+      <div class="skill-top"><span>${l}</span><span style="color:var(--ink2)">${n} certs</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+    </div>`;
+  }).join('');
+
+  // Top certified
+  const tops=COLABORADORES.map(e=>{
+    const n=allC.filter(c=>c.colabId===e.id&&c._s==='Vigente').length;
+    return{...e,n};
+  }).sort((a,b)=>b.n-a.n).slice(0,5);
+  document.getElementById('topCertified').innerHTML=tops.map((e,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <span style="font-family:'Aptos','Arial',sans-serif;font-weight:800;font-size:11px;color:var(--ink3);width:16px">${i+1}</span>
+      <div style="width:30px;height:30px;border-radius:8px;background:var(--accent-s);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Aptos','Arial',sans-serif;font-weight:800;font-size:10px">${initials(e.nombre)}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${e.nombre}</div><div style="font-size:11px;color:var(--ink2)">${e.area}</div></div>
+      <span class="tag t-active">${e.n} vigentes</span>
+    </div>`).join('');
+
+  // Detail by vendor
+  document.getElementById('skillsDetail').innerHTML=VENDORS.filter(v=>v.id!=='otro').map(v=>{
+    const certs=allC.filter(c=>c.proveedor===v.id);
+    if(!certs.length)return'';
+    return`<div style="margin-bottom:18px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px">${v.logo} ${v.name}</div>
+      ${certs.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="flex:1;font-weight:600">${c.certificacion}</span>
+        <span class="tag t-neutral" style="font-size:10px">${c.nivel}</span>
+        <span style="color:var(--ink2)">${c.colaborador}</span>
+        <span class="tag ${tagCls(c._s)}">${c._s}</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   RENDER: PRESUPUESTO (ADMIN)
+══════════════════════════════════════════ */
+function renderBudget(){
+  if(CFG.role!=='admin')return;
+  const allC=CERTS.map(c=>({...c,_s:calcSt(c)}));
+  const spent=allC.reduce((a,c)=>a+(c.costo||0),0);
+  const rmSpent=ROADMAP.reduce((a,r)=>a+(r.costoEstimado||0),0);
+  const remaining=BUDGET_CFG.total-spent;
+  const pct=BUDGET_CFG.total?Math.round(spent/BUDGET_CFG.total*100):0;
+
+  document.getElementById('budgetStats').innerHTML=`
+    <div class="stat blue"><div class="stat-lbl">Presupuesto ${BUDGET_CFG.year}</div><div class="stat-val">${fmtUSD(BUDGET_CFG.total)}</div><div class="stat-sub">Total asignado</div></div>
+    <div class="stat ${pct>BUDGET_CFG.alertPct?'red':'green'}"><div class="stat-lbl">Ejecutado</div><div class="stat-val">${fmtUSD(spent)}</div><div class="stat-sub">${pct}% del presupuesto</div></div>
+    <div class="stat warn"><div class="stat-lbl">Planificado (Roadmap)</div><div class="stat-val">${fmtUSD(rmSpent)}</div><div class="stat-sub">Estimado pendiente</div></div>
+    <div class="stat ${remaining<0?'red':'blue'}"><div class="stat-lbl">Disponible</div><div class="stat-val">${fmtUSD(remaining)}</div><div class="stat-sub">${remaining<0?'Sobre presupuesto':'Remanente'}</div></div>`;
+
+  // By vendor
+  document.getElementById('budgetByVendor').innerHTML=VENDORS.filter(v=>v.id!=='otro').map(v=>{
+    const tot=allC.filter(c=>c.proveedor===v.id).reduce((a,c)=>a+(c.costo||0),0);
+    if(!tot)return'';
+    const p=BUDGET_CFG.total?Math.round(tot/BUDGET_CFG.total*100):0;
+    return`<div class="skill-bar-wrap">
+      <div class="skill-top"><span>${v.logo} ${v.name}</span><span style="font-weight:700;color:${v.color}">${fmtUSD(tot)}</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:${p}%;background:${v.color}"></div></div>
+    </div>`;
+  }).join('');
+
+  // By area
+  const areas=[...new Set(COLABORADORES.map(c=>c.area))];
+  document.getElementById('budgetByArea').innerHTML=areas.map(a=>{
+    const ids=COLABORADORES.filter(c=>c.area===a).map(c=>c.id);
+    const tot=allC.filter(c=>ids.includes(c.colabId)).reduce((ac,c)=>ac+(c.costo||0),0);
+    if(!tot)return'';
+    const p=BUDGET_CFG.total?Math.round(tot/BUDGET_CFG.total*100):0;
+    return`<div class="skill-bar-wrap">
+      <div class="skill-top"><span>${a}</span><span style="font-weight:700">${fmtUSD(tot)}</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:${p}%;background:var(--accent)"></div></div>
+    </div>`;
+  }).join('');
+
+  // Table
+  document.getElementById('budgetTbody').innerHTML=allC.filter(c=>c.costo>0).sort((a,b)=>b.costo-a.costo).map(c=>`<tr>
+    <td>${c.colaborador}</td>
+    <td style="font-size:11px;color:var(--accent)">${c.legajo}</td>
+    <td>${c.certificacion}</td>
+    <td>${vendBadge(c.proveedor)}</td>
+    <td style="font-weight:700">${fmtUSD(c.costo)}</td>
+    <td style="font-size:12px;color:var(--ink2)">${fd(c.fechaEmision)}</td>
+    <td><span class="tag ${tagCls(c._s)}">${c._s}</span></td>
+  </tr>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   RENDER: REPORTE CLIENTES (ADMIN)
+══════════════════════════════════════════ */
+function renderReporte(){
+  if(CFG.role!=='admin')return;
+  const af=document.getElementById('rptArea')?.value||'';
+  const vf=document.getElementById('rptVend')?.value||'';
+  const sf=document.getElementById('rptSt')?.value||'';
+  const allC=CERTS.map(c=>({...c,_s:calcSt(c)}))
+    .filter(c=>(!sf||c._s===sf)&&(!vf||c.proveedor===vf));
+  const src=af?allC.filter(c=>{const e=COLABORADORES.find(x=>x.id===c.colabId);return e?.area===af;}):allC;
+  src.sort((a,b)=>a.colaborador.localeCompare(b.colaborador));
+
+  const html=`<div class="card" id="printArea"><div class="cb">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+      <div><div style="font-family:'Aptos','Arial',sans-serif;font-size:18px;font-weight:800">Reporte de Certificaciones</div>
+        <div style="font-size:12px;color:var(--ink2)">Generado: ${new Date().toLocaleDateString('es')} · Filtros: ${af||'Todas las áreas'} · ${vf?VENDORS.find(v=>v.id===vf)?.name:'Todos los proveedores'} · ${sf||'Todos los estados'}</div></div>
+    </div>
+    <table class="report-table">
+      <thead><tr><th>Legajo</th><th>Colaborador</th><th>Área</th><th>Seniority</th><th>Certificación</th><th>Proveedor</th><th>Nivel</th><th>N° Cert.</th><th>Vencimiento</th><th>Estado</th></tr></thead>
+      <tbody>${src.map(c=>{
+        const e=COLABORADORES.find(x=>x.id===c.colabId);
+        return`<tr>
+          <td style="font-weight:700;color:var(--accent)">${c.legajo}</td>
+          <td style="font-weight:600">${c.colaborador}</td>
+          <td style="font-size:11px">${e?.area||''}</td>
+          <td><span class="tag t-neutral" style="font-size:10px">${e?.seniority||''}</span></td>
+          <td style="font-weight:600">${c.certificacion}</td>
+          <td>${vendBadge(c.proveedor)}</td>
+          <td><span class="tag t-neutral" style="font-size:10px">${c.nivel}</span></td>
+          <td style="font-size:11px;color:var(--ink2)">${c.numCert||'—'}</td>
+          <td style="font-size:12px">${fd(c.fechaVencimiento)}</td>
+          <td><span class="tag ${tagCls(c._s)}">${c._s}</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+    <div style="margin-top:14px;font-size:12px;color:var(--ink2)">Total: ${src.length} certificaciones · ${new Set(src.map(c=>c.colabId)).size} colaboradores</div>
+  </div></div>`;
+  document.getElementById('reporteContent').innerHTML=html;
+}
+function exportReporteCSV(){
+  renderReporte();
+  const allC=CERTS.map(c=>({...c,_s:calcSt(c)}));
+  const rows=[['Legajo','Colaborador','Área','Seniority','Certificación','Proveedor','Nivel','N°Cert','Vencimiento','Estado','Costo']];
+  allC.forEach(c=>{const e=COLABORADORES.find(x=>x.id===c.colabId);rows.push([c.legajo,c.colaborador,e?.area||'',e?.seniority||'',c.certificacion,VENDORS.find(v=>v.id===c.proveedor)?.name||'',c.nivel,c.numCert,c.fechaVencimiento,c._s,c.costo]);});
+  const csv=rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='reporte_certificaciones.csv';a.click();
+}
+function printReporte(){window.print();}
+
+/* ══════════════════════════════════════════
+   RENDER: ABM MAESTROS (ADMIN)
+══════════════════════════════════════════ */
+function renderMaestros(){
+  if(CFG.role!=='admin')return;
+  document.getElementById('mcCount').textContent=MASTER_CERTS.length;
+  document.getElementById('meCount').textContent=MASTER_ENTITIES.length;
+  document.getElementById('masterCertList').innerHTML=MASTER_CERTS.map(c=>{
+    const v=vend(c.vendor);
+    return`<div class="master-item">
+      <span style="font-size:16px">${v.logo}</span>
+      <div style="flex:1"><div class="mi-name">${c.name}</div><div class="mi-sub">${v.name} · ${c.nivel}${c.vigencia?' · '+c.vigencia+'m':' · Sin vencimiento'}</div></div>
+      <button class="btn btn-danger btn-xs" onclick="delMasterCert('${c.id}')">🗑</button>
+    </div>`;
+  }).join('');
+  document.getElementById('masterEntList').innerHTML=MASTER_ENTITIES.map(e=>{
+    const v=vend(e.vendor);
+    return`<div class="master-item">
+      <span style="font-size:16px">${v.logo}</span>
+      <div style="flex:1"><div class="mi-name">${e.name}</div><div class="mi-sub">${v.name}${e.url?' · '+e.url:''}</div></div>
+      <button class="btn btn-danger btn-xs" onclick="delMasterEnt('${e.id}')">🗑</button>
+    </div>`;
+  }).join('');
+  // Refresh cert master select in modal
+  populateVendorFilters();
+}
+
+function addMasterCert(){
+  const name=document.getElementById('newCertName').value.trim();
+  const vendor=document.getElementById('newCertVend').value;
+  const nivel=document.getElementById('newCertLevel').value.trim()||'Associate';
+  if(!name)return toast('Nombre requerido','warn');
+  const id='mc'+Date.now();
+  MASTER_CERTS.push({id,name,vendor,nivel,vigencia:24});
+  document.getElementById('newCertName').value='';document.getElementById('newCertLevel').value='';
+  renderMaestros();toast('Certificación agregada al maestro','success');
+}
+function delMasterCert(id){if(!confirm('¿Eliminar del maestro?'))return;MASTER_CERTS=MASTER_CERTS.filter(c=>c.id!==id);renderMaestros();}
+function addMasterEnt(){
+  const name=document.getElementById('newEntName').value.trim();
+  const vendor=document.getElementById('newEntVend2').value;
+  const url=document.getElementById('newEntUrl').value.trim();
+  if(!name)return toast('Nombre requerido','warn');
+  MASTER_ENTITIES.push({id:'me'+Date.now(),name,vendor,url});
+  document.getElementById('newEntName').value='';document.getElementById('newEntUrl').value='';
+  renderMaestros();populateVendorFilters();toast('Entidad agregada','success');
+}
+function delMasterEnt(id){if(!confirm('¿Eliminar entidad?'))return;MASTER_ENTITIES=MASTER_ENTITIES.filter(e=>e.id!==id);renderMaestros();}
+
+/* ══════════════════════════════════════════
+   MODAL: CERTIFICACIÓN
+══════════════════════════════════════════ */
+function openCertModal(){
+  editingCertId=null;pendingFiles=[];
+  document.getElementById('certModalTitle').textContent='Nueva Certificación';
+  ['fCertId','fLegajo','fProv','fNivel','fEmision','fVence','fNumCert','fCosto','fNotas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fCertMaster').value='';
+  document.getElementById('fileList').innerHTML='';
+  const fw=document.getElementById('fColabWrap');
+  if(CFG.role==='admin'){
+    fw.style.display='flex';
+    document.getElementById('fColab').innerHTML=COLABORADORES.map(c=>`<option value="${c.id}" data-legajo="${c.legajo}">${c.legajo} — ${c.nombre}</option>`).join('');
+    document.getElementById('fColab').onchange=onColabChange;
+    onColabChange();
+  }else{
+    fw.style.display='none';
+    document.getElementById('fLegajo').value=CFG.user.legajo||'—';
+  }
+  document.getElementById('certOverlay').classList.add('open');
+}
+function onColabChange(){
+  const sel=document.getElementById('fColab');const opt=sel.selectedOptions[0];
+  document.getElementById('fLegajo').value=opt?.dataset.legajo||'';
+}
+function onCertMasterChange(){
+  const id=document.getElementById('fCertMaster').value;
+  const mc=MASTER_CERTS.find(c=>c.id===id);
+  if(mc){
+    const v=vend(mc.vendor);
+    document.getElementById('fProv').value=v.name;
+    document.getElementById('fNivel').value=mc.nivel;
+    // Auto-filter entities
+    const ents=MASTER_ENTITIES.filter(e=>e.vendor===mc.vendor);
+    document.getElementById('fEntidad').innerHTML='<option value="">— Seleccionar —</option>'+ents.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  }
+}
+function editCert(id){
+  const c=CERTS.find(x=>x.id===id);if(!c)return;
+  if(CFG.role!=='admin'&&c.colabId!==CFG.user?.id){toast('No autorizado','warn');return;}
+  editingCertId=id;pendingFiles=[];
+  document.getElementById('certModalTitle').textContent='Editar Certificación';
+  document.getElementById('fCertId').value=id;
+  document.getElementById('fCertMaster').value=c.certMasterId||'';
+  document.getElementById('fLegajo').value=c.legajo;
+  document.getElementById('fProv').value=VENDORS.find(v=>v.id===c.proveedor)?.name||c.proveedor;
+  document.getElementById('fNivel').value=c.nivel;
+  document.getElementById('fEmision').value=c.fechaEmision;
+  document.getElementById('fVence').value=c.fechaVencimiento;
+  document.getElementById('fNumCert').value=c.numCert||'';
+  document.getElementById('fCosto').value=c.costo||'';
+  document.getElementById('fNotas').value=c.notas||'';
+  document.getElementById('fileList').innerHTML=c.docUrl?`<div class="file-item"><span>📄</span><span class="file-name">Documento adjunto</span><a href="${c.docUrl}" target="_blank" class="btn btn-ghost btn-sm">Ver</a></div>`:'';
+  const fw=document.getElementById('fColabWrap');
+  if(CFG.role==='admin'){
+    fw.style.display='flex';
+    document.getElementById('fColab').innerHTML=COLABORADORES.map(x=>`<option value="${x.id}" data-legajo="${x.legajo}" ${x.id===c.colabId?'selected':''}>${x.legajo} — ${x.nombre}</option>`).join('');
+  }else{fw.style.display='none';}
+  // Filter entities
+  const mc=MASTER_CERTS.find(m=>m.id===c.certMasterId);
+  if(mc){const ents=MASTER_ENTITIES.filter(e=>e.vendor===mc.vendor);document.getElementById('fEntidad').innerHTML=ents.map(e=>`<option value="${e.id}" ${e.id===MASTER_ENTITIES.find(x=>x.name===c.entidad)?.id?'selected':''}>${e.name}</option>`).join('');}
+  document.getElementById('certOverlay').classList.add('open');
+}
+function saveCert(){
+  const mc=MASTER_CERTS.find(c=>c.id===document.getElementById('fCertMaster').value);
+  const vence=document.getElementById('fVence').value;
+  if(!mc||!vence){toast('Selecciona certificación y fecha de vencimiento','warn');return;}
+  const entId=document.getElementById('fEntidad').value;
+  const ent=MASTER_ENTITIES.find(e=>e.id===entId);
+  const colabSel=document.getElementById('fColab');
+  const colabId=CFG.role==='admin'?colabSel.value:CFG.user.id;
+  const colab=COLABORADORES.find(c=>c.id===colabId)||{nombre:CFG.user.nombre,legajo:CFG.user.legajo};
+  const payload={
+    colabId,legajo:colab.legajo,colaborador:colab.nombre,
+    certificacion:mc.name,certMasterId:mc.id,
+    proveedor:mc.vendor,nivel:mc.nivel,
+    entidad:ent?.name||'',
+    fechaEmision:document.getElementById('fEmision').value,
+    fechaVencimiento:vence,
+    numCert:document.getElementById('fNumCert').value,
+    costo:parseFloat(document.getElementById('fCosto').value)||0,
+    notas:document.getElementById('fNotas').value,
+    docUrl:pendingFiles.length?'/demo/'+pendingFiles[0].name:''
+  };
+  if(editingCertId){const idx=CERTS.findIndex(c=>c.id===editingCertId);CERTS[idx]={...CERTS[idx],...payload,id:editingCertId};}
+  else CERTS.push({id:nextCertId++,...payload});
+  closeMod('certOverlay');
+  renderAll();if(CFG.role==='admin'){renderAllTable();renderBudget();}
+  toast(editingCertId?'Certificación actualizada':'Certificación registrada','success');
+}
+function delCert(id){
+  if(!confirm('¿Eliminar?'))return;
+  CERTS=CERTS.filter(c=>c.id!==id);
+  renderAll();renderAllTable();renderBudget();
+  toast('Eliminada','');
+}
+
+/* ══════════════════════════════════════════
+   MODAL: ROADMAP
+══════════════════════════════════════════ */
+function openRoadmapModal(){
+  editingRmId=null;
+  document.getElementById('rmModalTitle').textContent='Agregar al Roadmap';
+  document.getElementById('fRmId').value='';
+  ['fRmStart','fRmTarget','fRmNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fRmPct').value='0';document.getElementById('fRmCost').value='';
+  document.getElementById('fRmStatus').value='Planificado';document.getElementById('fRmPrio').value='Alta';
+  const fw=document.getElementById('fRmColabWrap');
+  if(CFG.role==='admin'){fw.style.display='flex';document.getElementById('fRmColab').innerHTML=COLABORADORES.map(c=>`<option value="${c.id}">${c.legajo} — ${c.nombre}</option>`).join('');}
+  else{fw.style.display='none';}
+  document.getElementById('rmOverlay').classList.add('open');
+}
+function editRm(id){
+  const r=ROADMAP.find(x=>x.id===id);if(!r)return;
+  editingRmId=id;
+  document.getElementById('rmModalTitle').textContent='Editar Roadmap';
+  document.getElementById('fRmId').value=id;
+  document.getElementById('fRmCert').value=r.certMasterId||'';
+  document.getElementById('fRmStatus').value=r.status;
+  document.getElementById('fRmPrio').value=r.prioridad;
+  document.getElementById('fRmStart').value=r.fechaInicio||'';
+  document.getElementById('fRmTarget').value=r.fechaTarget||'';
+  document.getElementById('fRmPct').value=r.progreso||0;
+  document.getElementById('fRmCost').value=r.costoEstimado||'';
+  document.getElementById('fRmNotes').value=r.notas||'';
+  const fw=document.getElementById('fRmColabWrap');
+  if(CFG.role==='admin'){fw.style.display='flex';document.getElementById('fRmColab').innerHTML=COLABORADORES.map(c=>`<option value="${c.id}" ${c.id===r.colabId?'selected':''}>${c.legajo} — ${c.nombre}</option>`).join('');}
+  else fw.style.display='none';
+  document.getElementById('rmOverlay').classList.add('open');
+}
+function saveRoadmap(){
+  const certId=document.getElementById('fRmCert').value;
+  const mc=MASTER_CERTS.find(c=>c.id===certId);
+  if(!mc){toast('Selecciona una certificación','warn');return;}
+  const colabId=CFG.role==='admin'?document.getElementById('fRmColab').value:CFG.user.id;
+  const colab=COLABORADORES.find(c=>c.id===colabId)||{nombre:CFG.user.nombre,legajo:CFG.user.legajo};
+  const payload={
+    colabId,legajo:colab.legajo,colaborador:colab.nombre,
+    certMasterId:mc.id,certificacion:mc.name,proveedor:mc.vendor,nivel:mc.nivel,
+    status:document.getElementById('fRmStatus').value,
+    prioridad:document.getElementById('fRmPrio').value,
+    fechaInicio:document.getElementById('fRmStart').value,
+    fechaTarget:document.getElementById('fRmTarget').value,
+    progreso:parseInt(document.getElementById('fRmPct').value)||0,
+    costoEstimado:parseFloat(document.getElementById('fRmCost').value)||0,
+    notas:document.getElementById('fRmNotes').value
+  };
+  if(editingRmId){const idx=ROADMAP.findIndex(r=>r.id===editingRmId);ROADMAP[idx]={...ROADMAP[idx],...payload,id:editingRmId};}
+  else ROADMAP.push({id:nextRmId++,...payload});
+  closeMod('rmOverlay');renderRoadmap();
+  toast(editingRmId?'Roadmap actualizado':'Agregado al roadmap','success');
+}
+function delRm(id){if(!confirm('¿Eliminar del roadmap?'))return;ROADMAP=ROADMAP.filter(r=>r.id!==id);renderRoadmap();}
+
+/* ══════════════════════════════════════════
+   MODAL: COLABORADOR (ADMIN)
+══════════════════════════════════════════ */
+function openColabModal(){
+  editingColabId=null;
+  document.getElementById('colabModalTitle').textContent='Nuevo Colaborador';
+  document.getElementById('fColabId').value='';
+  ['fLegajoC','fNombreC','fCargoC','fEmailC','fIngresoC','fClienteC'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fAreaC').value='Data & Analytics';document.getElementById('fSenC').value='Semi Senior';
+  buildStackSelector([]);
+  colabTab('datos',document.getElementById('colabTabBtn1'));
+  document.getElementById('colabTabBtn2').style.display='none';
+  document.getElementById('colabOverlay').classList.add('open');
+}
+function editColab(id){
+  const c=COLABORADORES.find(x=>x.id===id);if(!c)return;
+  editingColabId=id;
+  document.getElementById('colabModalTitle').textContent='Editar Colaborador';
+  document.getElementById('fColabId').value=id;
+  document.getElementById('fLegajoC').value=c.legajo;document.getElementById('fNombreC').value=c.nombre;
+  document.getElementById('fCargoC').value=c.cargo;document.getElementById('fAreaC').value=c.area;
+  document.getElementById('fSenC').value=c.seniority;document.getElementById('fIngresoC').value=c.ingreso||'';
+  document.getElementById('fEmailC').value=c.email||'';document.getElementById('fClienteC').value=c.cliente||'';
+  buildStackSelector(c.stack||[]);
+  colabTab('datos',document.getElementById('colabTabBtn1'));
+  document.getElementById('colabTabBtn2').style.display='flex';
+  document.getElementById('colabOverlay').classList.add('open');
+}
+function buildStackSelector(selected){
+  document.getElementById('stackSelector').innerHTML=VENDORS.filter(v=>v.id!=='otro').map(v=>{
+    const on=selected.includes(v.id);
+    return`<div class="vendor ${v.cls}" style="cursor:pointer;opacity:${on?1:.4};border:2px solid ${on?v.color:'transparent'};padding:4px 10px;transition:all .15s" data-vid="${v.id}" onclick="toggleStack(this,'${v.id}')">${v.logo} ${v.name}</div>`;
+  }).join('');
+}
+function toggleStack(el,vid){
+  const on=el.style.opacity==='1';
+  el.style.opacity=on?'.4':'1';
+  const v=VENDORS.find(x=>x.id===vid);
+  el.style.borderColor=on?'transparent':v.color;
+}
+function getSelectedStack(){
+  return [...document.querySelectorAll('#stackSelector [data-vid]')].filter(el=>el.style.opacity==='1').map(el=>el.dataset.vid);
+}
+function saveColab(){
+  const legajo=document.getElementById('fLegajoC').value.trim();
+  const nombre=document.getElementById('fNombreC').value.trim();
+  if(!legajo||!nombre){toast('Legajo y nombre son requeridos','warn');return;}
+  const payload={
+    legajo,nombre,cargo:document.getElementById('fCargoC').value,
+    area:document.getElementById('fAreaC').value,seniority:document.getElementById('fSenC').value,
+    ingreso:document.getElementById('fIngresoC').value,email:document.getElementById('fEmailC').value,
+    cliente:document.getElementById('fClienteC').value,stack:getSelectedStack()
+  };
+  if(editingColabId){const idx=COLABORADORES.findIndex(c=>c.id===editingColabId);COLABORADORES[idx]={...COLABORADORES[idx],...payload};}
+  else COLABORADORES.push({id:'c'+nextColabId++,...payload});
+  closeMod('colabOverlay');renderEmpleados();
+  toast(editingColabId?'Colaborador actualizado':'Colaborador agregado','success');
+}
+
+/* ══════════════════════════════════════════
+   COLABORADOR: TABS PERFORMANCE & PROYECTOS
+══════════════════════════════════════════ */
+function colabTab(tab, btn){
+  document.querySelectorAll('#colabOverlay .itab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('colabTabDatos').style.display=tab==='datos'?'':'none';
+  document.getElementById('colabTabRel').style.display=tab==='relaciones'?'':'none';
+  document.getElementById('colabSaveBtn').style.display=tab==='datos'?'':'none';
+  if(tab==='relaciones'&&editingColabId)renderColabRelaciones(editingColabId);
+}
+
+function getCurrentEvaluador(colab){
+  return(colab.evaluadoresHistory||[]).find(x=>!x.hasta)||null;
+}
+function getCurrentLider(colab){
+  return(colab.lideresHistory||[]).find(x=>!x.hasta)||null;
+}
+
+function renderColabRelaciones(colabId){
+  const c=COLABORADORES.find(x=>x.id===colabId);if(!c)return;
+  const others=COLABORADORES.filter(x=>x.id!==colabId).map(x=>`<option value="${x.id}">${x.legajo} — ${x.nombre}</option>`).join('');
+  document.getElementById('fNuevoEval').innerHTML='<option value="">— Seleccionar —</option>'+others;
+  document.getElementById('fNuevoLider').innerHTML='<option value="">— Seleccionar —</option>'+others;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('fEvalDesde').value=today;
+  document.getElementById('fLiderDesde').value=today;
+  document.getElementById('fEvalNotas').value='';
+  document.getElementById('fLiderProyecto').value='';
+  const ce=getCurrentEvaluador(c);
+  document.getElementById('evalCurrentBadge').textContent=ce?'Actual: '+ce.evaluadorNombre:'Sin asignar';
+  const cl=getCurrentLider(c);
+  document.getElementById('liderCurrentBadge').textContent=cl?'Actual: '+cl.liderNombre:'Sin asignar';
+  renderEvalHistory(c);renderLiderHistory(c);
+}
+
+function renderEvalHistory(c){
+  const hist=c.evaluadoresHistory||[];
+  document.getElementById('evalHistoryList').innerHTML=hist.length
+    ?[...hist].reverse().map((h,di)=>{
+        const oi=hist.length-1-di;
+        return`<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px">
+          <div style="margin-top:4px;width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${!h.hasta?'var(--success)':'var(--ink3)'}"></div>
+          <div style="flex:1">
+            <div style="font-weight:600">${h.evaluadorNombre}</div>
+            <div style="color:var(--ink2)">${fd(h.desde)} → ${h.hasta?fd(h.hasta):'<span style="color:var(--success)">Presente</span>'}</div>
+            ${h.notas?`<div style="color:var(--ink3);font-size:11px">${h.notas}</div>`:''}
+          </div>
+          ${!h.hasta?`<button class="btn btn-outline btn-xs" onclick="cerrarEvaluador('${c.id}',${oi})">Cerrar</button>`:'<span class="tag t-neutral" style="font-size:10px">Cerrado</span>'}
+        </div>`;
+      }).join('')
+    :'<p style="color:var(--ink2);font-size:12px;padding:8px 0">Sin historial registrado</p>';
+}
+
+function renderLiderHistory(c){
+  const hist=c.lideresHistory||[];
+  document.getElementById('liderHistoryList').innerHTML=hist.length
+    ?[...hist].reverse().map((h,di)=>{
+        const oi=hist.length-1-di;
+        return`<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px">
+          <div style="margin-top:4px;width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${!h.hasta?'var(--success)':'var(--ink3)'}"></div>
+          <div style="flex:1">
+            <div style="font-weight:600">${h.liderNombre}</div>
+            <div style="color:var(--ink2)">${h.proyecto?`<span class="tag t-neutral" style="font-size:10px;margin-right:4px">${h.proyecto}</span>`:''}${fd(h.desde)} → ${h.hasta?fd(h.hasta):'<span style="color:var(--success)">Presente</span>'}</div>
+          </div>
+          ${!h.hasta?`<button class="btn btn-outline btn-xs" onclick="cerrarLider('${c.id}',${oi})">Cerrar</button>`:'<span class="tag t-neutral" style="font-size:10px">Cerrado</span>'}
+        </div>`;
+      }).join('')
+    :'<p style="color:var(--ink2);font-size:12px;padding:8px 0">Sin historial registrado</p>';
+}
+
+function asignarEvaluador(){
+  if(!editingColabId){toast('Guarda el colaborador primero','warn');return;}
+  const c=COLABORADORES.find(x=>x.id===editingColabId);if(!c)return;
+  const evalId=document.getElementById('fNuevoEval').value;
+  const evalC=COLABORADORES.find(x=>x.id===evalId);
+  if(!evalC){toast('Selecciona un evaluador','warn');return;}
+  const desde=document.getElementById('fEvalDesde').value;
+  if(!desde){toast('Indica la fecha de inicio','warn');return;}
+  const notas=document.getElementById('fEvalNotas').value;
+  if(!c.evaluadoresHistory)c.evaluadoresHistory=[];
+  c.evaluadoresHistory.forEach(h=>{if(!h.hasta)h.hasta=desde;});
+  c.evaluadoresHistory.push({evaluadorId:evalId,evaluadorNombre:evalC.nombre,desde,hasta:null,notas});
+  renderColabRelaciones(editingColabId);renderEmpleados();
+  toast('Evaluador asignado','success');
+}
+
+function cerrarEvaluador(colabId,idx){
+  const c=COLABORADORES.find(x=>x.id===colabId);
+  if(!c||!c.evaluadoresHistory[idx])return;
+  c.evaluadoresHistory[idx].hasta=new Date().toISOString().split('T')[0];
+  renderColabRelaciones(colabId);renderEmpleados();
+  toast('Asignación cerrada','success');
+}
+
+function asignarLider(){
+  if(!editingColabId){toast('Guarda el colaborador primero','warn');return;}
+  const c=COLABORADORES.find(x=>x.id===editingColabId);if(!c)return;
+  const liderId=document.getElementById('fNuevoLider').value;
+  const liderC=COLABORADORES.find(x=>x.id===liderId);
+  if(!liderC){toast('Selecciona un líder','warn');return;}
+  const proyecto=document.getElementById('fLiderProyecto').value.trim();
+  const desde=document.getElementById('fLiderDesde').value;
+  if(!desde){toast('Indica la fecha de inicio','warn');return;}
+  if(!c.lideresHistory)c.lideresHistory=[];
+  c.lideresHistory.forEach(h=>{if(!h.hasta)h.hasta=desde;});
+  c.lideresHistory.push({liderId,liderNombre:liderC.nombre,proyecto,desde,hasta:null});
+  renderColabRelaciones(editingColabId);renderEmpleados();
+  toast('Líder asignado','success');
+}
+
+function cerrarLider(colabId,idx){
+  const c=COLABORADORES.find(x=>x.id===colabId);
+  if(!c||!c.lideresHistory[idx])return;
+  c.lideresHistory[idx].hasta=new Date().toISOString().split('T')[0];
+  renderColabRelaciones(colabId);renderEmpleados();
+  toast('Asignación cerrada','success');
+}
+
+/* ══════════════════════════════════════════
+   MODAL: PRESUPUESTO CONFIG
+══════════════════════════════════════════ */
+function openBudgetModal(){
+  document.getElementById('fBudgetTotal').value=BUDGET_CFG.total;
+  document.getElementById('fBudgetYear').value=BUDGET_CFG.year;
+  document.getElementById('fBudgetAlert').value=BUDGET_CFG.alertPct;
+  document.getElementById('budgetOverlay').classList.add('open');
+}
+function saveBudget(){
+  BUDGET_CFG.total=parseFloat(document.getElementById('fBudgetTotal').value)||0;
+  BUDGET_CFG.year=parseInt(document.getElementById('fBudgetYear').value)||2025;
+  BUDGET_CFG.alertPct=parseInt(document.getElementById('fBudgetAlert').value)||80;
+  closeMod('budgetOverlay');renderBudget();toast('Presupuesto actualizado','success');
+}
+
+/* ══════════════════════════════════════════
+   FILE UPLOAD
+══════════════════════════════════════════ */
+function handleFiles(fl){[...fl].forEach(f=>{if(f.size>10*1024*1024){toast('Archivo >10MB','warn');return;}pendingFiles.push(f);renderFL();});}
+function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('drag');handleFiles(e.dataTransfer.files);}
+function rmFile(i){pendingFiles.splice(i,1);renderFL();}
+function renderFL(){document.getElementById('fileList').innerHTML=pendingFiles.map((f,i)=>`<div class="file-item"><span>${f.type.includes('pdf')?'📄':'🖼'}</span><span class="file-name">${f.name}</span><span style="color:var(--ink3);font-size:11px">${(f.size/1024).toFixed(0)}KB</span><button class="fdel" onclick="rmFile(${i})">✕</button></div>`).join('');}
+
+/* ══════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════ */
+function exportCSV(){
+  if(CFG.role!=='admin'){toast('Solo admins','warn');return;}
+  const rows=[['Legajo','Colaborador','Área','Seniority','Certificación','Proveedor','Nivel','Entidad','N°Cert','Emisión','Vencimiento','Estado','Costo USD']];
+  CERTS.map(c=>({...c,_s:calcSt(c)})).forEach(c=>{const e=COLABORADORES.find(x=>x.id===c.colabId);rows.push([c.legajo,c.colaborador,e?.area||'',e?.seniority||'',c.certificacion,VENDORS.find(v=>v.id===c.proveedor)?.name||'',c.nivel,c.entidad,c.numCert,c.fechaEmision,c.fechaVencimiento,c._s,c.costo]);});
+  const csv=rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));a.download='certtrack_export.csv';a.click();
+}
+
+/* ══════════════════════════════════════════
+   MODAL UTILS
+══════════════════════════════════════════ */
+function closeMod(id){document.getElementById(id).classList.remove('open');}
+function closeOverlay(id,e){if(e.target.id===id)closeMod(id);}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+function toast(msg,type=''){
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  el.innerHTML=`<span>${{success:'✅',warn:'⚠️',error:'❌','':'ℹ️'}[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toastWrap').appendChild(el);setTimeout(()=>el.remove(),3200);
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  populateVendorFilters();
+  applyDemoRole();
+});
+</script>
+</body>
+</html>

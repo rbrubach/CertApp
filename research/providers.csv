@@ -1,0 +1,17 @@
+proveedor,categoria,total_certs_activas,precio_min_usd,precio_max_usd,validez_tipica,plataforma_examen,cobertura_genai,url_oficial
+AWS,Cloud,4 (+ 1 retirándose),100,300,36 meses,Pearson VUE,Sí,https://aws.amazon.com/certification/
+GCP,Cloud,5,99,200,24-36 meses,Kryterion,Sí,https://cloud.google.com/learn/certification
+Azure,Cloud,9 (varias retirándose),99,165,Sin exp. / 12 meses,Pearson VUE,Sí,https://learn.microsoft.com/en-us/credentials/browse/
+Databricks,Plataforma de Datos / AI,11,200,200,24 meses,Webassessor,Sí,https://www.databricks.com/learn/training/certification
+Snowflake,Plataforma de Datos,11,100,375,24 meses,Pearson VUE,Sí,https://learn.snowflake.com/en/certifications/
+dbt Labs,Analytics Engineering,1,200,200,24 meses,Examity,No,https://www.getdbt.com/certifications/analytics-engineer-certification-exam
+NVIDIA,AI / GPU Computing,11,125,500,24 meses,Certiverse,Sí,https://www.nvidia.com/en-us/learn/certification/
+IBM,AI / Datos,5,200,200,24 meses,Pearson VUE,Sí,https://www.ibm.com/certify
+Tableau (Salesforce),Business Intelligence,4,100,400,Sin exp. / 24 meses,Trailhead Academy,No,https://www.tableau.com/learn/certification
+Qlik,Business Intelligence,15,250,250,24 meses,Qlik Learning Platform,Sí,https://www.qlik.com/us/services/training/certifications
+Confluent,Data Streaming,4,0,150,24 meses,Portal Confluent,No,https://www.confluent.io/certification/
+MongoDB,Base de Datos NoSQL,4,150,150,Sin expiración (version-tied),MongoDB University,No,https://learn.mongodb.com/pages/certification-program
+Oracle,Cloud / Datos / AI,5,0,245,24 meses,Pearson VUE,Sí,https://education.oracle.com/
+SAS Institute,Analytics / ML,7,0,180,36-60 meses,Pearson VUE,No,https://www.sas.com/en_us/certification.html
+DAMA International,Data Governance / Management,3 niveles + 7 especialidades,311,311,36 meses,Portal DAMA,No,https://dama.org/certification/about-cdmp-certification/
+Astronomer,Data Engineering / Orquestación,4,150,150,No especificada,Astronomer Academy,No,https://www.astronomer.io/certification/
