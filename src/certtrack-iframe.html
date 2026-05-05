@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CertTrack - Certificaciones</title>
+<style>
+:root {
+  --bg: #0e1117;
+  --s1: #161b27;
+  --s2: #1e2535;
+  --border: #2a3349;
+  --ink: #e8eaf2;
+  --ink2: #8892a4;
+  --accent: #4f8ef7;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warn: #f59e0b;
+  --aws: #ff9900;
+  --azure: #0078d4;
+  --gcp: #ea4335;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.container { padding: 16px; }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.status {
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status.connected {
+  background: rgba(34,197,94,.12);
+  color: var(--success);
+}
+
+.status.loading {
+  background: rgba(245,158,11,.12);
+  color: var(--warn);
+}
+
+.status.error {
+  background: rgba(239,68,68,.12);
+  color: var(--danger);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status.connected .status-dot { background: var(--success); }
+.status.loading .status-dot {
+  background: var(--warn);
+  animation: pulse 1s infinite;
+}
+.status.error .status-dot { background: var(--danger); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 150px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.search-input::placeholder { color: var(--ink2); }
+
+.button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.button:hover { background: #3d7ce8; }
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.message {
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  display: none;
+}
+
+.message.show { display: block; }
+.message.success {
+  background: rgba(34,197,94,.12);
+  color: var(--success);
+  border: 1px solid rgba(34,197,94,.2);
+}
+
+.message.error {
+  background: rgba(239,68,68,.12);
+  color: var(--danger);
+  border: 1px solid rgba(239,68,68,.2);
+}
+
+.message.warning {
+  background: rgba(245,158,11,.12);
+  color: var(--warn);
+  border: 1px solid rgba(245,158,11,.2);
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+table thead {
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+}
+
+table th {
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+table tbody tr:hover { background: var(--s2); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.active {
+  background: rgba(34,197,94,.2);
+  color: var(--success);
+}
+
+.badge.inactive {
+  background: rgba(239,68,68,.2);
+  color: var(--danger);
+}
+
+.vendor {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.vendor.aws {
+  background: rgba(255,153,0,.2);
+  color: var(--aws);
+}
+
+.vendor.azure {
+  background: rgba(0,120,212,.2);
+  color: var(--azure);
+}
+
+.vendor.gcp {
+  background: rgba(234,67,53,.2);
+  color: var(--gcp);
+}
+
+.vendor.other {
+  background: rgba(139,139,139,.2);
+  color: #a0a0a0;
+}
+
+.empty {
+  text-align: center;
+  padding: 30px;
+  color: var(--ink2);
+}
+
+.loading {
+  text-align: center;
+  padding: 30px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 8px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--ink2);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="title">📋 Certificaciones</div>
+    <div class="status loading" id="status">
+      <span class="status-dot"></span>
+      <span>Conectando</span>
+    </div>
+  </div>
+
+  <div class="message" id="messageBox"></div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="controls">
+    <input type="text" class="search-input" id="search" placeholder="Buscar certificación, empleado, vendor...">
+    <button class="button" onclick="reload()">🔄 Refrescar</button>
+    <button class="button" onclick="exportCSV()">⬇ CSV</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Certificación</th>
+          <th>Estado</th>
+          <th>Legajo</th>
+          <th>Empleado</th>
+          <th>Vendor</th>
+          <th>UN</th>
+          <th>Rol</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr>
+          <td colspan="7" class="loading">
+            <div class="spinner"></div>
+            Cargando...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// ============================================
+// CERTIFICACIONES - APLICACIÓN IFRAME
+// ============================================
+
+const APP = {
+  data: [],
+  filtered: [],
+  spSite: null,
+  spUser: null,
+  apiDelay: 0
+};
+
+// Init
+(async function init() {
+  console.log('[CertTrack] Iniciando...');
+
+  // Detectar contexto SharePoint
+  if (window._spPageContextInfo) {
+    console.log('[CertTrack] Contexto SP detectado');
+    APP.spSite = _spPageContextInfo.webAbsoluteUrl;
+    APP.spUser = _spPageContextInfo.userDisplayName;
+  } else if (window.parent !== window && window.parent._spPageContextInfo) {
+    // Si estamos en iframe, obtener del parent
+    console.log('[CertTrack] Contexto SP en parent detectado');
+    APP.spSite = window.parent._spPageContextInfo.webAbsoluteUrl;
+    APP.spUser = window.parent._spPageContextInfo.userDisplayName;
+  }
+
+  if (APP.spSite) {
+    setStatus('Conectado', 'connected');
+    await loadData();
+  } else {
+    setStatus('Error', 'error');
+    showMessage('⚠️ No se detectó contexto de SharePoint. Abre desde: https://everisgroup.sharepoint.com/sites/DNAArgUY2', 'warning');
+  }
+
+  // Event listeners
+  document.getElementById('search').addEventListener('input', filterData);
+})();
+
+// Cargar datos
+async function loadData() {
+  try {
+    setStatus('Cargando', 'loading');
+
+    const listName = 'Certificaciones';
+    const endpoint = `${APP.spSite}/_api/web/lists/getByTitle('${listName}')/items?$top=5000&$orderby=Modified desc`;
+
+    console.log('[CertTrack] API call:', endpoint);
+
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      credentials: 'same-origin'
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const json = await response.json();
+    APP.data = json.value || [];
+    APP.filtered = [...APP.data];
+
+    console.log(`[CertTrack] Cargadas ${APP.data.length} certificaciones`);
+
+    renderTable();
+    renderStats();
+    setStatus('Conectado', 'connected');
+    showMessage(`✓ ${APP.data.length} certificaciones cargadas`, 'success');
+
+  } catch (error) {
+    console.error('[CertTrack] Error:', error);
+    setStatus('Error', 'error');
+    showMessage(`❌ Error: ${error.message}`, 'error');
+  }
+}
+
+// Renderizar tabla
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+
+  if (APP.filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin resultados</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = APP.filtered.map(item => {
+    const cert = getField(item, 'Certificaci_x00f3_n', 'Title');
+    const estado = getField(item, 'Estado_x0020_Usuario');
+    const legajo = getField(item, 'N_x00fa_mero_x0020_de_x0020_Legajo');
+    const empleado = getField(item, 'Nombre_x0020_Completo');
+    const vendor = getField(item, 'Vendor');
+    const un = getField(item, 'Business_x0020_Unit_x0028_UN_x0029_');
+    const rol = getField(item, 'Rol');
+
+    return `
+      <tr>
+        <td>${cert}</td>
+        <td><span class="badge ${estado === 'Activo' ? 'active' : 'inactive'}">${estado}</span></td>
+        <td>${legajo}</td>
+        <td>${empleado}</td>
+        <td><span class="vendor ${getVendorClass(vendor)}">${vendor}</span></td>
+        <td>${un}</td>
+        <td>${rol}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Renderizar stats
+function renderStats() {
+  if (APP.data.length === 0) {
+    document.getElementById('stats').innerHTML = '';
+    return;
+  }
+
+  const active = APP.data.filter(d => getField(d, 'Estado_x0020_Usuario') === 'Activo').length;
+  const vendors = {};
+
+  APP.data.forEach(d => {
+    const v = getField(d, 'Vendor') || 'Otro';
+    vendors[v] = (vendors[v] || 0) + 1;
+  });
+
+  let html = `
+    <div class="stat-card">
+      <div class="stat-value">${APP.data.length}</div>
+      <div class="stat-label">Total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${active}</div>
+      <div class="stat-label">Activas</div>
+    </div>
+  `;
+
+  Object.entries(vendors).slice(0, 3).forEach(([vendor, count]) => {
+    html += `
+      <div class="stat-card">
+        <div class="stat-value">${count}</div>
+        <div class="stat-label">${vendor}</div>
+      </div>
+    `;
+  });
+
+  document.getElementById('stats').innerHTML = html;
+}
+
+// Filtrar datos
+function filterData() {
+  const query = document.getElementById('search').value.toLowerCase();
+
+  APP.filtered = APP.data.filter(item => {
+    const cert = getField(item, 'Certificaci_x00f3_n', 'Title').toLowerCase();
+    const empleado = getField(item, 'Nombre_x0020_Completo').toLowerCase();
+    const vendor = getField(item, 'Vendor').toLowerCase();
+    const un = getField(item, 'Business_x0020_Unit_x0028_UN_x0029_').toLowerCase();
+
+    return cert.includes(query) || empleado.includes(query) || vendor.includes(query) || un.includes(query);
+  });
+
+  renderTable();
+}
+
+// Exportar CSV
+function exportCSV() {
+  if (APP.data.length === 0) {
+    showMessage('No hay datos para exportar', 'warning');
+    return;
+  }
+
+  const headers = ['Certificación', 'Estado', 'Legajo', 'Empleado', 'Vendor', 'UN', 'Rol'];
+  const rows = APP.data.map(item => [
+    getField(item, 'Certificaci_x00f3_n', 'Title'),
+    getField(item, 'Estado_x0020_Usuario'),
+    getField(item, 'N_x00fa_mero_x0020_de_x0020_Legajo'),
+    getField(item, 'Nombre_x0020_Completo'),
+    getField(item, 'Vendor'),
+    getField(item, 'Business_x0020_Unit_x0028_UN_x0029_'),
+    getField(item, 'Rol')
+  ]);
+
+  const csv = [
+    headers.join(','),
+    ...rows.map(r => r.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `certs_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+}
+
+// Recargar
+function reload() {
+  loadData();
+}
+
+// ============================================
+// UTILIDADES
+// ============================================
+
+function getField(item, ...names) {
+  for (const name of names) {
+    if (item[name] !== undefined && item[name] !== null && item[name] !== '') {
+      return item[name];
+    }
+  }
+  return 'N/A';
+}
+
+function getVendorClass(vendor) {
+  if (!vendor) return 'other';
+  const v = vendor.toLowerCase();
+  if (v.includes('aws')) return 'aws';
+  if (v.includes('azure')) return 'azure';
+  if (v.includes('gcp') || v.includes('google')) return 'gcp';
+  return 'other';
+}
+
+function setStatus(text, type) {
+  const el = document.getElementById('status');
+  el.className = `status ${type}`;
+  el.innerHTML = `<span class="status-dot"></span><span>${text}</span>`;
+}
+
+function showMessage(text, type) {
+  const box = document.getElementById('messageBox');
+  box.className = `message show ${type}`;
+  box.textContent = text;
+
+  if (type === 'success') {
+    setTimeout(() => {
+      box.classList.remove('show');
+    }, 4000);
+  }
+}
+
+// Debug
+console.log('[CertTrack] App loaded');
+console.log('[CertTrack] SharePoint site:', APP.spSite);
+console.log('[CertTrack] User:', APP.spUser);
+</script>
+
+</body>
+</html>
